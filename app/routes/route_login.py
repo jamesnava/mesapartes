@@ -1,0 +1,33 @@
+from flask import Blueprint, render_template,redirect,url_for,request
+from flask_login import login_user,login_required,current_user,logout_user
+from app.formularios.formlogin.form_auth import LoginForm
+from app.modelos.QueryLogin import QueryL
+
+
+
+
+auth_bp=Blueprint('auth',__name__,url_prefix='/auth')
+
+
+@auth_bp.route('/logout')
+def salir():
+	logout_user()
+	return redirect(url_for('auth.inicio'))
+
+@auth_bp.route('/',methods=['POST','GET'])
+def inicio():	
+	form=LoginForm()
+	if request.method=='POST':
+		usuario=form.usuario.data
+		clave=form.clave.data
+		recordar=form.recordar.data
+		sql=f"""SELECT * FROM USUARIO WHERE Nombre_Usuario=? AND Contrasena=?"""
+		obj_query=QueryL()
+		user=obj_query.cargarUsuario(sql,(usuario,clave))
+
+		if user and user.password==clave:
+			login_user(user,remember=recordar)
+			next_page = request.args.get('next')			
+			return redirect(next_page or url_for('main.principal'))		
+	
+	return render_template('/start/inicio.html',form=form)

@@ -1,0 +1,134 @@
+	{% extends "/start/main.html"%}
+
+	{%block content%}
+	<div class="contenedorinterno">
+		<div class="menubutton">
+			<a href="#" data-bs-toggle="modal" data-bs-target="#Mnuevodoc", id="cargarPlantilla">
+			<img src="{{url_for('static',filename='/img/newdoc.png')}}" width="90" height="90">
+			<h3>Nuevo</h3>
+			</a>
+		</div>
+
+		<div class="menubutton">
+			<a href="{{url_for('rol.modulo')}}">
+			<img src="{{url_for('static',filename='/img/bentrada.png')}}" width="90" height="90">
+			<h3>B. Entrada</h3>
+			</a>
+		</div>
+		<div class="menubutton">
+			<a href="{{url_for('rol.rol')}}">
+			<img src="{{url_for('static',filename='/img/bsalida.png')}}" width="90" height="90">
+			<h3>B. Salida</h3>
+			</a>
+		</div>
+
+		<div class="menubutton">
+			<a href="{{url_for('rol.modulo')}}">
+			<img src="{{url_for('static',filename='/img/historial.png')}}" width="90" height="90">
+			<h3>Historial</h3>
+			</a>
+		</div>
+		<div class="menubutton">
+			<a href="{{url_for('rol.rol')}}">
+			<img src="{{url_for('static',filename='/img/seguimiento.png')}}" width="90" height="90">
+			<h3>Seguimiento</h3>
+			</a>
+		</div>
+
+		
+	</div>
+
+
+	<div class="modal fade modal-lg" id="Mnuevodoc" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h1 class="modal-title fs-5" id="exampleModalLabel">Nuevo documento</h1>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	      </div>
+	      <div class="modal-body">
+	      	<form id="formulariodocumento" method="POST" enctype="multipart/form-data">
+	      		<div class="mb-3">
+	        		<label>Tipo de Flujo</label> 
+	        		<select id="TFlujo" name="TFlujo" class="form-select">
+	        			<option value="Ingreso">Ingreso</option>
+	        			<option value="Egreso">Egreso</option>
+	        		</select>          		       		
+	        	</div> 
+
+	      		<div class="mb-3">
+	      			<div class="row">
+	      				<div class="col-6">
+	      					<label>Numero</label>
+	        				<input type="text" class="form-control" name="numeracion" id="numeracion">
+	        			</div>
+	      				<div class="col-6">
+	      					<label>Codigo Seguimiento</label>
+	        				<input type="text" class="form-control" name="NSeguimiento" id="NSeguimiento">
+	      				</div>
+	      			</div>	        		       		       		
+	        	</div>
+
+	        	<div class="mb-3">
+	        		<label>Asunto</label>
+	        		<input type="text" class="form-control" name="Asunto" id="Asunto">        		       		
+	        	</div>
+	        	<div class="mb-3">
+	        		<label>Tipo documento</label>
+	        		<select id="Tdoc" name="Tdoc" class="form-select">
+	        		</select>        		    		
+	        	</div>
+	        	<div class="mb-3">
+	        		<label>Descripcion</label> 
+	        		<input type="text" class="form-control" name="descripcion" id="descripcion">       		       		
+	        	</div>
+	        	<div class="mb-3">
+	        		<label>Prioridad</label> 
+	        		<select id="prioridad" name="prioridad" class="form-select">
+
+	        		</select>          		       		
+	        	</div>        	
+	        	<div class="mb-3">
+	        		<label>Destino</label> 
+	        		<input type="text" class="form-control" id="destino">
+	        		<div id="iddivdestino" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div>        		         		       		
+	        	</div>
+	        	<div class="mb-3">
+	        		<table class="table" id="tableoficinas">
+	 				 <thead>
+	    				<tr>
+	    				 <th scope="col">codigo</th>
+	    				 <th scope="col">Oficina</th>
+	   				 	 <th scope="col"></th>      
+	    				</tr>
+	  				 </thead>
+	  				 <tbody>
+	  
+	 				 </tbody>
+					</table>       		         		       		
+	        	</div>
+	        	<div class="mb-3">
+	        		<label>Dni Emisor</label> 
+	        		<input type="text" class="form-control" id="Emisor">
+	        		         		       		
+	        	</div>
+	        	<div class="mb-3">
+	        		<label>Datos Emisor</label> 
+	        		<input type="text" class="form-control" name="DEmisor" id="DEmisor">
+	        		         		       		
+	        	</div>        	
+	        	<div class="mb-3">
+	        		<label>Adjuntar</label> 
+	        		<input type="file" class="form-control" name="adjunto" id="adjunto">
+	        		         		       		
+	        	</div>
+	        	</form> 
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+	        <button type="button" class="btn btn-primary" id="grabardoc">Grabar</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	{%endblock%}

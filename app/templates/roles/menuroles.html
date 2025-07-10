@@ -1,0 +1,19 @@
+{%extends "start/main.html"%}
+
+{%block content%}
+<div class="contenedorinterno">
+	<div class="menubutton">
+		<a href="{{url_for('rol.rol')}}">
+		<img src="{{url_for('static',filename='/img/crear.svg')}}" width="90" height="90">
+		<h3>Crea Rol</h3>
+		</a>
+	</div>
+
+	<div class="menubutton">
+		<a href="{{url_for('rol.modulo')}}">
+		<img src="{{url_for('static',filename='/img/modulo.svg')}}" width="90" height="90">
+		<h3>Asignar Modulos</h3>
+		</a>
+	</div>
+</div>
+{%endblock%}

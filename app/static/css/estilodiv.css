@@ -1,0 +1,42 @@
+body{
+	background: #9fa2a2;
+}
+.centrar{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	
+
+}
+
+
+
+.styleadvance{
+	border-radius: 5px;
+	border: 1px solid #000;
+	background: rgba(22,115,138,0.8);
+	padding: 7px;
+
+}
+
+.alturafullscreen{
+	height: 100vh;
+}
+
+.altura50{
+	height: 50vh;
+}
+
+.altura25{
+	height: 25vh;
+}
+
+.ancho25{
+	width: 25vh;
+}
+
+.ancho50{
+	width: 50vh;
+}
+
