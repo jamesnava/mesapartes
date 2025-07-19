@@ -1,0 +1,153 @@
+{%extends "/start/main.html"%}
+{%block info%}
+<input type="hidden" id="usuario_id" value="{{info.dni}}">
+  <input type="hidden" id="oficina" value="{{info.oficina}}">  
+  <h6>Usuario: </h6>
+  <span>{{info.usuario}}</span>
+{%endblock%}
+{%block content%}
+<div>
+  <div class="titulomodulo">
+   <h1>Documentos Pendientes a recepcion</h1>
+ </div>
+ <div class="contenedorgeneralH">
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      
+      <th>Fecha</th>
+      <th>Titulo</th>
+      <th>Emisor</th>
+      <th>Tipo</th>
+      <th>Asunto</th>
+      <th>Oficina Origen</th>
+      <th>Prioridad</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="tablaBandeja">
+   {%for val in datos%}
+   <tr>
+   	<td>{{val.FechaFormateada}}</td>
+    <td>{{val.Titulo}}</td>
+   	<td>{{val.NEmisor}}</td>
+   	<td>{{val.Nombre_TipoDocumento}}</td>
+   	<td>{{val.Asunto}}</td>
+   	<td>{{val.nombre_oficina}}</td>
+   	<td>{{val.Nombre_Prioridad}}</td>
+   	<td><button type="button" class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}">Ver doc</button> <button type="button" class="btn btn-success recepcionardoc" data-idmovimiento="{{val.Id_Movimiento}}">Recepcionar</button></td>
+   </tr>
+   {%endfor%}
+  </tbody>
+</table>
+
+
+</div>
+<div class="titulomodulo">
+   <h1>Documentos recepcionados</h1>
+</div>
+<div class="contenedorgeneralB">
+    <table class="table table-bordered">
+  <thead>
+    <tr>
+      
+      <th>Fecha</th>
+      <th>Titulo</th>
+      <th>Emisor</th>
+      <th>Tipo</th>
+      <th>Asunto</th>
+      <th>Oficina Origen</th>
+      <th>Prioridad</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="tablaBandeja">
+   {%for val in datos_recepcion%}
+   <tr>
+    <td>{{val.FechaFormateada}}</td>
+    <td>{{val.Titulo}}</td>
+    <td>{{val.NEmisor}}</td>
+    <td>{{val.Nombre_TipoDocumento}}</td>
+    <td>{{val.Asunto}}</td>
+    <td>{{val.nombre_oficina}}</td>
+    <td>{{val.Nombre_Prioridad}}</td>
+    <input type="hidden" name="" id="idmov" value="{{val.Id_Movimiento}}">
+    <td><button type="button" class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}">Ver doc</button> <button type="button" class="btn btn-success acciones" data-idmovimiento="{{val.Id_Movimiento}}">ACCIONES</button></td>
+   </tr>
+   {%endfor%}
+  </tbody>
+</table>
+</div>
+
+
+</div>
+
+<!--previsualizar archivo adjunto-->
+<div class="modal fade" id="verpdf" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Documento Adjunto</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <iframe id="visorPDF" src="" width="100%" height="600px" style="border:none;"></iframe>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--derivar-->
+<div class="modal fade" id="veracciones" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Acciones a realizar</h1>        
+      </div>
+      <div class="modal-body">
+        <h5>Acciones disponibles para el documento:--</h5>
+
+        <select id="tipoAccion" class="form-select">
+          
+        </select>
+
+        <!-- Mostrar si es derivar -->
+        <div id="panelDerivar" style="display:none;">
+          <label>Derivar a Oficina:</label>
+          <input type="text" class="form-control" id="oficinaDestino">
+          <div id="iddivdestinoD" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div>
+
+          <table class="table" id="tableoficinasD">
+           <thead>
+              <tr>
+               <th scope="col">codigo</th>
+               <th scope="col">Oficina</th>
+               <th scope="col"></th>      
+              </tr>
+             </thead>
+             <tbody>
+    
+           </tbody>
+          </table>             
+        </div>
+
+        <label>Comentario (opcional):</label>
+        <textarea id="comentarioAccion" class="form-control"></textarea>
+
+        
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>  
+        <button type="button" class="btn btn-primary" id="btnConfirmarAccion">Confirmar</button>  
+      </div>
+    </div>
+  </div>
+</div>
+
+{%endblock%}

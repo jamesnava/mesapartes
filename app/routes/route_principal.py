@@ -14,7 +14,8 @@ def cargar_usuario():
 @main_bp.route("/principal")
 @login_required
 def principal():
-	return render_template('/start/main.html')
+
+	return render_template('/start/main.html',usuario=current_user.username)
 
 @main_bp.route("/roles")
 @login_required
@@ -23,5 +24,6 @@ def rolesPermisos():
 
 @main_bp.route('/documentos')
 def documentos():
-	return render_template('/documentos/doc_principal.html')
+	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
+	return render_template('/documentos/doc_principal.html',datos=datos)
 

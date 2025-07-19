@@ -9,7 +9,14 @@
     <title>Mesa de Partes</title>
   </head>
   <body>
-    <div class="area">        
+    <div class="info">
+        {%block info%}
+        <h5>usuario: </h5>
+        <h5>{{usuario}}</h5>
+        {%endblock%}
+    </div>
+    <div class="area">
+
         {%block content%}
 
         {%endblock%}

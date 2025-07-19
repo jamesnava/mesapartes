@@ -16,6 +16,6 @@ class QueryL(object):
 
 		finally:
 			if rows:
-				return User(rows[0],rows[1],rows[2])
+				return User(rows[0],rows[1],rows[2],rows[3])
 			else:
 				return None

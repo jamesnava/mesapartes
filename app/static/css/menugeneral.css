@@ -184,6 +184,14 @@ align-items: center;
   transform: scale(0.9);
   cursor: pointer;
 }
+.info{
+  display: flex;
+  background-color: #15597c;
+  width: 100%;
+  margin-top: 1px;
+  justify-content: right;
+  color: white;
+}
 
 
 .submenubutton{

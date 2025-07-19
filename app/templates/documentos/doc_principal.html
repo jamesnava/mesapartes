@@ -1,4 +1,10 @@
 	{% extends "/start/main.html"%}
+	{%block info%}
+	<input type="hidden" id="usuario_id" value="{{datos.dni}}">
+	<input type="hidden" id="oficina" value="{{datos.oficina}}">	
+	<h6>Usuario: </h6>
+	<span>{{datos.usuario}}</span>
+	{%endblock%}
 
 	{%block content%}
 	<div class="contenedorinterno">
@@ -10,7 +16,7 @@
 		</div>
 
 		<div class="menubutton">
-			<a href="{{url_for('rol.modulo')}}">
+			<a href="{{url_for('documents.ingresoDocumento')}}">
 			<img src="{{url_for('static',filename='/img/bentrada.png')}}" width="90" height="90">
 			<h3>B. Entrada</h3>
 			</a>
@@ -47,26 +53,11 @@
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
 	      <div class="modal-body">
-	      	<form id="formulariodocumento" method="POST" enctype="multipart/form-data">
-	      		<div class="mb-3">
-	        		<label>Tipo de Flujo</label> 
-	        		<select id="TFlujo" name="TFlujo" class="form-select">
-	        			<option value="Ingreso">Ingreso</option>
-	        			<option value="Egreso">Egreso</option>
-	        		</select>          		       		
-	        	</div> 
+	      	<form id="formulariodocumento" method="POST" enctype="multipart/form-data">	    		
 
-	      		<div class="mb-3">
-	      			<div class="row">
-	      				<div class="col-6">
-	      					<label>Numero</label>
-	        				<input type="text" class="form-control" name="numeracion" id="numeracion">
-	        			</div>
-	      				<div class="col-6">
-	      					<label>Codigo Seguimiento</label>
-	        				<input type="text" class="form-control" name="NSeguimiento" id="NSeguimiento">
-	      				</div>
-	      			</div>	        		       		       		
+	        	<div class="mb-3">
+	        		<label>Titulo</label>
+	        		<input type="text" class="form-control" name="titulodoc" id="titulodoc">        		       		
 	        	</div>
 
 	        	<div class="mb-3">
@@ -109,7 +100,7 @@
 	        	</div>
 	        	<div class="mb-3">
 	        		<label>Dni Emisor</label> 
-	        		<input type="text" class="form-control" id="Emisor">
+	        		<input type="text" class="form-control" id="Emisor" name="Emisor">
 	        		         		       		
 	        	</div>
 	        	<div class="mb-3">
