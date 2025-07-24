@@ -1,0 +1,38 @@
+{%extends "/start/main.html"%}
+{%block info%}
+{%endblock%}
+
+{%block content%}
+<div class="contendorseguimiento">
+<h2>📤 Documentos Derivados</h2>
+
+<table border="1" class="table table-dark table-striped">
+  <thead>
+    <tr>
+      
+      <th>Código</th>
+      <th>Asunto</th>
+      <th>Destino</th>
+      <th>Fecha</th>
+      <th>Estado</th>
+      <th>Acción</th>
+    </tr>
+  </thead>
+  <tbody>
+    {%for val in datos%}
+    <tr>      
+      <td></td>
+      <td>{{val.Asunto}}</td>
+      <td>{{val.nombre_oficina}}</td>
+      <td>{{val.FechaFormateada}}</td>
+      <td>{{val.Nombre_estado}}</td>
+      <td><button type="button" class="btn btn-danger salidadoc" data-idmovimientoderivado="{{val.Id_Movimiento}}"><i class="fas fa-reply-all" title="
+      	Revertir"></i></button></td>
+    </tr>
+    {%endfor%}
+    
+  </tbody>
+</table>
+</div>
+
+{%endblock%}

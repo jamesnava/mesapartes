@@ -36,6 +36,8 @@ class QueryDocumentos():
 				
 		except Exception as e:
 			print(e)
+			print(sql)
+			print(params)
 		finally:
 			return nuevo_id
 

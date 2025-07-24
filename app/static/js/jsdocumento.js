@@ -190,7 +190,13 @@ $('#grabardoc').on('click',function(){
 		success: function(response){
 			if (response!=0){
 				mostrarMensaje('success','Exitoso!');
-				location.reload(true);
+				//mostrar div de impresion
+				$('#verconstancia').attr('src', "/static/ticket/doc.pdf");
+				$('#constancia').modal('show');
+				$('#constancia').on('hidden.bs.modal', function () {
+  					location.reload(true);
+				});
+
 			}
 			else{
 				mostrarMensaje('error','Ocurrio Algo!');
@@ -205,6 +211,7 @@ $('#grabardoc').on('click',function(){
 $('.ver-pdf').on('click',function(){
 	const url=$(this).data('url');
 	$('#visorPDF').attr('src', "/static/uploads/"+url);
+	//$('#visorPDF').attr('src', "/static/ticket/doc.pdf");
   $('#verpdf').modal('show');
 });
 
@@ -265,12 +272,126 @@ $('#btnConfirmarAccion').on('click',function(){
 			type:'POST',
 			data:{'accion':accion,'comentario':comentario,'idmovimiento':idmovimiento,'codigoOf':codigo},
 			success:function(response){
-				location.reload(true);
-
+				if (response==1)
+				setTimeout(function(){location.reload(true);},1000);
 			}
 	});
 
 });
+
+$('#btnconsultar').on('click',function(){
+	const codigo=$('#codigoSeguimiento').val();
+	$.ajax({
+		url:'/documents/followrequest',
+		type:'POST',
+		data:{'codigo':codigo} ,
+		success:function(response){
+			$('#resultadoSeguimiento').show();
+      $('#historialTabla').empty();
+      $('#lineaTiempo').show();
+      const linea = $('.timeline');
+      linea.empty();
+			$.each(response.datos,function(index,valores){
+				 $('#historialTabla').append(`
+          <tr>
+            <td>${valores.fecha}</td>
+            <td>${valores.accion}</td>
+            <td>${valores.origen}</td>
+            <td>${valores.destino}</td>
+            <td>${valores.usuario}</td>
+            <td>${valores.comentario || ''}</td>
+          </tr>`);
+
+				 linea.append(`
+          <li><strong>${valores.fecha}</strong>: ${valores.accion} — <em>${valores.origen}</em> → <em>${valores.destino}</em><br>${valores.comentario || ''}</li>`);
+      
+			});
+
+		}
+	});
+
+
+});
+
+//revertir
+$('.salidadoc').on('click',function(){
+	const idmovimiento=$(this).data('idmovimientoderivado');	
+	  Swal.fire({
+    title: '¿Estás seguro?',
+    text: "Revertir documento",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, continuar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+      		url:'/documents/revertirdoc',
+      		type:'POST',
+      		data:{'idmovimiento':idmovimiento},
+      		success:function(response){
+      			if (response!=0){
+      				mostrarMensaje('success','Se revertio, correctamente');
+      				setTimeout(function(){location.reload(true);},1000);
+      			}
+      			
+
+      		}
+
+      });
+
+    }
+  });
+
+
+});
+
+$('.btnsubsanar').on('click',function(){
+	const idmovimiento=$(this).data('idmovimientosubsanar');
+	$('#idmovimientooculto').val(idmovimiento);
+	$('#modalsubsanar').modal('show');
+
+});
+
+$('#btnconfirmarsubsanacion').on('click',function(){
+	const formData=new FormData($('#formsubsanacion')[0]);
+
+	$.ajax({
+		url:'/documents/subsanacion',
+		type:'POST',
+		data:formData,
+		contentType:false,
+		processData:false,
+		success:function(response){
+			if(response!=0){
+				mostrarMensaje('success','Exitoso!');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+			else{
+				mostrarMensaje('error','No pudo subsanarse');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+		}
+	});
+
+
+});
+
+//validar adjunto
+$('#adjunto').on('change', function () {
+			
+				const maxSizeMB = 2;
+        let archivo = this.files[0];
+        if (!archivo) return;
+
+        // Verifica tamaño
+        if (archivo.size > maxSizeMB * 1024 * 1024) {
+            mostrarMensaje('error', `El archivo supera el límite de ${maxSizeMB}MB.`);
+            $(this).val(''); // Limpiar campo
+            return;
+        }      
+    });
+
 
 
 });

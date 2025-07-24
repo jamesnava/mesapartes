@@ -248,3 +248,18 @@ a{
   background-color: #f8d7da;
   color: #721c24;
 }
+
+.toast-mensaje {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 999999; /* muy alto para estar sobre el modal */
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: none;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
