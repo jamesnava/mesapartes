@@ -5,6 +5,7 @@ from app.routes.route_login import auth_bp
 from app.routes.route_principal import main_bp
 from app.routes.route_roles import rol_bp
 from app.routes.route_documentos import documento_bp
+from app.routes.route_oficina import oficina_bp
 from app.modelos.QueryLogin import QueryL
 
 
@@ -26,4 +27,5 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(main_bp)
 app.register_blueprint(rol_bp)
 app.register_blueprint(documento_bp)
+app.register_blueprint(oficina_bp)
 

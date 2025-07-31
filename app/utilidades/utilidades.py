@@ -8,6 +8,10 @@ def GeneracionCodigo(logintud):
 	caracteres=string.ascii_letters+string.digits
 	codigo=''.join(random.choice(caracteres) for i in range(logintud))
 	return codigo
+def GeneracionCodigoOficina(logintud):
+	caracteres=string.ascii_uppercase
+	codigo=''.join(random.choice(caracteres) for i in range(logintud))
+	return codigo
 
 def generarTicket(rows,oficinas,direccion):	
 	w, h = 80 * mm, 200 * mm

@@ -7,14 +7,16 @@
 {%endblock%}
 
 {%block content%}
-<div class="contendorseguimiento">
-<form id="formSeguimiento" class="mb-4">
-  <div class="form-group">
-    <label for="codigoSeguimiento">Código de Seguimiento</label>
+<div>
+  <div class="titulomodulo">
+  <form id="formSeguimiento" class="mb-4">
+  <div class="form-group">    
     <input type="text" id="codigoSeguimiento" class="form-control" placeholder="Ingrese código de seguimiento" required>
   </div>
   <button type="button" id="btnconsultar" class="btn btn-primary mt-2">Consultar</button>
 </form>
+</div>
+<div class="contenedorgeneralHistorial">
 
 <!-- Tabla de Historial -->
 <div id="resultadoSeguimiento" class="mt-4" style="display: none;">
@@ -42,6 +44,7 @@
   <ul class="timeline">
     <!-- Eventos de línea de tiempo -->
   </ul>
+</div>
 </div>
 </div>
 {%endblock%}

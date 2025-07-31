@@ -7,9 +7,12 @@
  <span>{{info.usuario}}</span>
 {%endblock%}
 {%block content%}
-<div class="contendorseguimiento">
-<h2>Documentos Observados</h2>
-<input type="text" name="">
+<div>
+<div class="titulomodulo">
+  <label>Buscar</label>
+  <input type="text" name="">
+</div>
+<div class="contenedorgeneralHistorial">
 <table border="1" class="table table-dark table-striped mt-3">
   <thead>
     <tr>
@@ -51,7 +54,7 @@
         	<div class="mb-3">
 	        	<label>Adjuntar</label>
 	        	<input type="hidden" name="idmovimientooculto" value="" id="idmovimientooculto"> 
-	        	<input type="file" class="form-control" name="adjunto" id="adjunto">        		         		       		
+	        	<input type="file" class="form-control" name="adjunto" id="adjunto" accept=".pdf">        		         		       		
 	        </div>
 	    </form> 
       </div>
@@ -62,5 +65,5 @@
     </div>
   </div>
 </div>
-
+</div>
 {%endblock%}

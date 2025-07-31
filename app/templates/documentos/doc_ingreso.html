@@ -6,6 +6,7 @@
   <span>{{info.usuario}}</span>
 {%endblock%}
 {%block content%}
+
 <div>
   <div class="titulomodulo">
    <h1>Documentos Pendientes a recepcion</h1>
@@ -39,7 +40,7 @@
       <button type="button" class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}"><i class="fas fa-file-pdf" title="Ver documento"></i>
       </button> 
       <button type="button" class="btn btn-success recepcionardoc" data-idmovimiento="{{val.Id_Movimiento}}"><i class="fas fa-check-circle" title="Recepcionar documento"></i></button>
-    <button type="button" class="btn btn-danger recepcionardoc" data-idmovimiento="{{val.Id_Movimiento}}"><i class="fas fa-comments" title="Ver datos adicionales"></i></button>
+    <button type="button" class="btn btn-danger comentarios" data-idmovimiento="{{val.Id_Movimiento}}"><i class="fas fa-comments" title="Ver datos adicionales"></i></button>
     </td>
    </tr>
    {%endfor%}
@@ -107,6 +108,23 @@
   </div>
 </div>
 
+<!--previsualizar comentarios-->
+<div class="modal fade" id="vercomentarios" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Información Adicional</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <span id="spancomentarios"></span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
+      </div>
+    </div>
+  </div>
+</div>
 
 <!--derivar-->
 <div class="modal fade" id="veracciones" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

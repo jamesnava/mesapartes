@@ -263,7 +263,7 @@ def actualizacionaccion():
 def salidasdoc():
 	objConsulta=QueryDocumentos()
 	sql="""WITH UltimosMovimientos AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila FROM MOVIMIENTO 
-    WHERE Tipo_Flujo = ? AND Id_Oficina_Origen = ?)
+    WHERE  Id_Oficina_Origen = ?)
 	SELECT 
     FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
     CONCAT(P.Nombre, ' ', P.ApellidoPaterno, ' ', P.ApellidoMaterno) AS NEmisor,TD.Nombre_TipoDocumento,D.Asunto,O.nombre_oficina,
@@ -271,7 +271,7 @@ def salidasdoc():
 	INNER JOIN PERSONA P ON D.Emisor = P.Dni INNER JOIN Tipos_Prioridad TP ON D.Prioridad = TP.Id_TiposPrioridad
 	INNER JOIN Tipo_Documento TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento INNER JOIN Oficina O ON M.Id_Oficina_Destino = O.Id_Oficina
 	INNER JOIN Adjunto A ON D.Id_Adjunto = A.Id_Adjunto INNER JOIN Estado_Doc AS ED ON D.Estado=ED.Id_EstadoDoc WHERE M.fila = 1 AND M.Id_Accion = ?"""
-	rows_resultados=objConsulta.ConsultaMainDocParams(sql,('Egreso',current_user.id_oficina,3))
+	rows_resultados=objConsulta.ConsultaMainDocParams(sql,(current_user.id_oficina,3))
 
 
 	return render_template('/documentos/doc_salida.html',datos=rows_resultados)
@@ -333,9 +333,51 @@ def SubsanarDoc():
 				controlador=objConsulta.InsertDataIdentity(sql_insert,params)
 
 		except Exception as e:
-			print(e)
-	print('controlador',controlador)
+			print(e)	
 	return [controlador]
+
+@documento_bp.route('/doc_historial')
+def HistorialDocumentos():
+	objConsulta=QueryDocumentos()
+	sql="""SELECT M.numeroIngreso,M.numeroEgreso,D.Titulo,FORMAT(M.Fecha_Movimiento,'yyyy-MM-dd HH:mm') AS Fecha_Movimiento,U.Nombre_Usuario,M.Tipo_Flujo 
+	FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON M.Id_Documento=D.Id_Documento INNER JOIN USUARIO AS U
+	ON M.Id_Usuario=U.Id_Usuario 	WHERE M.Id_Oficina_Destino = ?  AND Tipo_Flujo IN (?,?) ORDER BY M.Fecha_Movimiento DESC;"""
+	params=(current_user.id_oficina,'Ingreso','Egreso')
+	rows_datos=objConsulta.ConsultaMainDocParams(sql,params)
+	return render_template('/documentos/doc_historial.html',datos=rows_datos)
+
+@documento_bp.route('/fillhistorico',methods=['POST'])
+def historicoDocumento():
+	objConsulta=QueryDocumentos()
+	flujo=request.form.get('tipo')
+	datos=[]
+	if flujo=='Ingreso':
+		sql="""SELECT O.nombre_oficina,M.numeroIngreso,M.numeroEgreso,D.Titulo,FORMAT(M.Fecha_Movimiento,'yyyy-MM-dd HH:mm') AS Fecha_Movimiento,U.Nombre_Usuario,M.Tipo_Flujo,D.CodigoSeguimiento  
+		FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON M.Id_Documento=D.Id_Documento INNER JOIN USUARIO AS U ON		
+		M.Id_Usuario=U.Id_Usuario INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina WHERE M.Id_Oficina_Destino = ? AND Tipo_Flujo = 'Ingreso' ORDER BY M.Fecha_Movimiento DESC"""
+		rows_result=objConsulta.ConsultaMainDocParams(sql,(current_user.id_oficina,))
+		datos=[{'codigo':val.CodigoSeguimiento,'oficina':val.nombre_oficina,'numeracion':val.numeroIngreso,'titulo':val.Titulo,'fecha':val.Fecha_Movimiento,'usuario':val.Nombre_Usuario,'flujo':val.Tipo_Flujo} for val in rows_result]
+
+	elif flujo=='Egreso':
+		sql="""SELECT M.numeroEgreso,D.Titulo,FORMAT(M.Fecha_Movimiento,'yyyy-MM-dd HH:mm') AS Fecha_Movimiento,U.Nombre_Usuario,M.Tipo_Flujo,O.nombre_oficina,D.CodigoSeguimiento  FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON
+		M.Id_Documento=D.Id_Documento INNER JOIN USUARIO AS U ON M.Id_Usuario=U.Id_Usuario INNER JOIN Oficina AS O ON M.Id_Oficina_Destino=O.Id_Oficina
+		WHERE M.Id_Oficina_Origen = ?  AND Tipo_Flujo = 'Egreso'"""
+		rows_result=objConsulta.ConsultaMainDocParams(sql,(current_user.id_oficina))
+		datos=[{'codigo':val.CodigoSeguimiento,'oficina':val.nombre_oficina,'numeracion':val.numeroEgreso,'titulo':val.Titulo,'fecha':val.Fecha_Movimiento,'usuario':val.Nombre_Usuario,'flujo':val.Tipo_Flujo} for val in rows_result]
+	else:
+		pass
+	
+	return jsonify({'datos':datos})
+
+@documento_bp.route('/vercomentarios',methods=['POST'])
+def VerComentarios():
+	objConsulta=QueryDocumentos()
+	idmovimiento=request.form.get('idmovimiento')
+	sql="SELECT comentarios FROM MOVIMIENTO WHERE Id_Movimiento=?"
+	rows_resultado=objConsulta.ConsultaMainDocParams(sql,(idmovimiento,))
+	comentario=rows_resultado[0].comentarios if rows_resultado else ''
+	return jsonify({'comentarios':comentario})
+
 def getnumeracion(oficina,tipoflujo):
 	objConsulta=QueryDocumentos()	
 	#numero de ingreso y egreso
@@ -353,6 +395,7 @@ def getnumeracion(oficina,tipoflujo):
 	else:
 		numeracion=max(row.numeroEgreso for row in rows)+1 if rows else 1	
 	return numeracion
+
 
 
 	

@@ -79,6 +79,8 @@ else{
 }
 });
 
+
+
 $('#tableoficinas').on('click','.eliminaroficinas',function(){
 	$(this).closest('tr').remove();
 });
@@ -377,6 +379,22 @@ $('#btnconfirmarsubsanacion').on('click',function(){
 
 });
 
+$('.comentarios').on('click',function(){
+	const idmovimiento=$(this).data('idmovimiento');
+	$('#vercomentarios').modal('show');
+	$.ajax({
+		type:'POST',
+		url:'/documents/vercomentarios',
+		data:{'idmovimiento':idmovimiento},
+		success: function(response){
+			$('#spancomentarios').text('');
+			$('#spancomentarios').text(response.comentarios);
+		}
+
+	});
+
+});
+
 //validar adjunto
 $('#adjunto').on('change', function () {
 			
@@ -391,6 +409,36 @@ $('#adjunto').on('change', function () {
             return;
         }      
     });
+
+
+
+$('input[name="rfilter"]').on('change',function(){
+	const seleccion=$(this).val();
+	$.ajax({
+		url:'/documents/fillhistorico',
+		type:'POST',
+		data:{'tipo':seleccion} ,
+		success:function(response){
+			$('#tablehistorico').empty()
+			$.each(response.datos,function(index,valores){
+				$('#tablehistorico').append(`
+					<tr>
+					<td>${valores.numeracion}</td>
+					<td>${valores.titulo}</td>
+					<td>${valores.fecha}</td>
+					<td>${valores.usuario}</td>
+					<td>${valores.oficina}</td>
+					<td>${valores.flujo}</td>
+					<td>${valores.codigo}</td>
+					<td><button class="btn btn-success"><i class="fas fa-eye" aria-hidden="true" title="ver"></i></button></td>
+					</tr>
+					`);
+			});
+
+		}
+	});
+
+});
 
 
 
