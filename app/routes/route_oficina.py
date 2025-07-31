@@ -49,7 +49,7 @@ def updateOficina():
 	responsable=request.form.get('responsable')
 	padre=request.form.get('codigopadre')
 	sql="""UPDATE Oficina SET nombre_oficina=?,Responsable=?,Id_Oficina_Padre=? WHERE Id_Oficina=?"""
-	params=(name,responsable,padre,codigo)
+	params=(name,responsable,padre,codigo)	
 	#actualiza datos
 	numero=objconsulta.InsertDataGeneral(sql,params)
 	return [numero]

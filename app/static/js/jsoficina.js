@@ -95,7 +95,7 @@ $(document).ready(function(){
 		const codigo=$('#codigoup').val();
 		const nombre=$('#upnameoficina').val();
 		const padre=$('#upcodigopadre').val();
-		const responsable=$('#responsableoficinaup').data('id');
+		const responsable=$('#responsableoficinaup').data('dni');
 
 		datos={'codigo':codigo,'nombre':nombre,'responsable':responsable,'codigopadre':padre}
 		$.ajax({

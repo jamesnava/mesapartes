@@ -1,0 +1,134 @@
+{%extends "/start/main.html"%}
+
+{%block info%}
+<input type="hidden" id="usuario_id" value="{{info.dni}}">
+<input type="hidden" id="oficina" value="{{info.oficina}}">  
+  <h6>Usuario: </h6>
+  <span>{{info.usuario}}</span>
+{%endblock%}
+{%block content%}
+<div>
+<div class="titulomodulo">
+	<button class="btn btn-primary" id="btninsertpersona"><i class="fas fa-user-plus" title="Agregar"></i></button>
+</div>
+<div class="contenedorgeneralHistorial">
+	<div class="tabla-contenedor">
+	<div class="card mt-4  shadow">
+  <div class="card-header bg-primary text-white contenedordocumento">
+    <h5 class="mb-0">Registro de personal</h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle mb-0 tabla-controlada">
+        <thead class="table-light text-center">
+          <tr>
+          	<th>Dni</th>
+            <th>Datos</th>
+            <th>Correo</th>
+            <th>Telefono</th>            
+            <th>Distrito</th>            
+            <th>Direccion</th>            
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-center" id="tablehistorico">
+          {%for val in rows%}
+          <tr>
+          	<td>{{val.Dni}}</td>
+          	<td>{{val.Nombre}} {{val.ApellidoPaterno}} {{val.ApellidoMaterno}} </td>
+          	<td>{{val.Email}}</td>
+          	<td>{{val.Telefono}}</td>
+          	<td>{{val.Distrito}}</td>
+          	<td>{{val.Direccion}}</td>
+          	<td>
+          		<button class="btn btn-success btneditarperson" data-updni={{val.Dni}} ><i class="fas fa-pencil" aria-hidden="true" title="Editar"></i></button>
+          		<button class="btn btn-danger btneliminarperson" data-deldni={{val.Dni}} ><i class="fas fa-trash" aria-hidden="true" title="Eliminar"></i></button>
+          	</td>
+          </tr>
+          {%endfor%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!--insertar-->
+<div class="modal fade" id="insertarpersona" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Datos personales</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      <form id="formulariopersona">
+         <label>Dni</label>
+         <input type="number" name="dnip" class="form-control">
+         <label>Nombre</label>
+         <input type="text" name="nombrep" class="form-control">
+         <label>Apellido Paterno</label>
+         <input type="text" name="apellidopp" class="form-control">
+         <label>Apellido Materno</label>
+         <input type="text" name="apellidomp" class="form-control">
+         <label>E-mail</label>
+         <input type="email" name="emailp" class="form-control">
+         <label>Telefono</label>
+         <input type="tel" name="telefonop" class="form-control">
+         <label>Distrito</label>
+         <input type="text" name="distritop" class="form-control">
+         <label>Direccion</label>
+         <input type="text" name="direccionp" class="form-control">
+         </form> 
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="insertperson">Grabar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!--editar-->
+<div class="modal fade" id="editarpersona" tabindex="-1" aria-labelledby="exampleModalLabel" >
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Datos personales</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      <form id="formulariopersonaeditar">
+         <label>Dni</label>
+         <input type="number" name="dnipe" id="dnipe" class="form-control" readonly>
+         <label>Nombre</label>
+         <input type="text" name="nombrepe" id="nombrepe" class="form-control">
+         <label>Apellido Paterno</label>
+         <input type="text" name="apellidoppe" id="apellidoppe" class="form-control">
+         <label>Apellido Materno</label>
+         <input type="text" name="apellidompe" id="apellidompe" class="form-control">
+         <label>E-mail</label>
+         <input type="email" name="emailpe" id="emailpe" class="form-control">
+         <label>Telefono</label>
+         <input type="tel" name="telefonope" id="telefonope" class="form-control">
+         <label>Distrito</label>
+         <input type="text" name="distritope" id="distritope" class="form-control">
+         <label>Direccion</label>
+         <input type="text" name="direccionpe" id="direccionpe" class="form-control">
+         </form> 
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btnsaveupdateperson">Grabar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{%endblock%}

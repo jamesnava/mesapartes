@@ -32,7 +32,11 @@ def oficinaplantilla():
 	objConsulta=QueryDocumentos()
 	sql="SELECT * FROM Oficina"
 	rows_consulta=objConsulta.ConsultaMainDoc(sql)
-
 	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
 	return render_template('/oficinas/Oficinas.html',info=datos,rows=rows_consulta)
+
+@main_bp.route('/peruser')
+def userperson():
+	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
+	return render_template('/personas/peruserprincipal.html',info=datos)
 
