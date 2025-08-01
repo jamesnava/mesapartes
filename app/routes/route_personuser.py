@@ -7,8 +7,11 @@ puser_bp=Blueprint('puser',__name__,url_prefix='/puser')
 @puser_bp.route('/tuser')
 def templateUser():
 	objConsulta=QueryDocumentos()
+	sql="""SELECT P.Nombre,P.ApellidoPaterno,P.ApellidoMaterno,P.Dni,U.Nombre_Usuario,U.Id_Usuario,U.Estado,O.nombre_oficina
+			FROM USUARIO as U INNER JOIN PERSONA AS P ON U.Dni=P.Dni INNER JOIN Oficina AS O ON U.Id_Oficina=O.Id_Oficina"""
+	rows=objConsulta.ConsultaMainDoc(sql)
 	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
-	return render_template('/personas/usuario.html',info=datos)
+	return render_template('/personas/usuario.html',info=datos,rows=rows)
 
 @puser_bp.route('/tperson')
 def templatePerson():
@@ -72,11 +75,79 @@ def saveupdatepersona():
 
 @puser_bp.route('/deleteperson',methods=['POST'])
 def deleteperson():
-	objConsulta=QueryDocumentos()
-	dni=request.form.get('dni')
-	sql="DELETE FROM PERSONA WHERE Dni=?"
-	numero=objConsulta.InsertDataGeneral(sql,(dni))
+	numero=0
+	try:
+		objConsulta=QueryDocumentos()
+		dni=request.form.get('dni')
+		sql="DELETE FROM PERSONA WHERE Dni=?"
+		numero=objConsulta.InsertDataGeneral(sql,(dni))
+	except Exception as e:
+		raise e	
 	return [numero]
+
+@puser_bp.route('/searchperson',methods=['POST'])
+def searchperson():
+	objConsulta=QueryDocumentos()
+	valor=request.form.get('datos')
+
+	sql="SELECT * FROM PERSONA WHERE Dni LIKE ? OR Nombre LIKE ?"
+	params=("%"+valor+"%","%"+valor+"%")
+	datos=None
+	try:
+		rows=objConsulta.ConsultaMainDocParams(sql,params)
+		datos=[{'dni':val.Dni,'nombre':val.Nombre,'apellidop':val.ApellidoPaterno,'apellidom':val.ApellidoMaterno,'email':val.Email,'telefono':val.Telefono,'distrito':val.Distrito,'direccion':val.Direccion} for val in rows]
+		
+	except Exception as e:
+		raise e
+	return jsonify({'datos':datos})
+
+@puser_bp.route('/searchpersonwithoutuser',methods=['POST'])
+def searchpersonwithoutuser():
+	objConsulta=QueryDocumentos()
+	datos=request.form.get('datos')
+	sql="""SELECT P.Dni,P.Nombre,P.ApellidoPaterno,P.ApellidoMaterno FROM 
+	PERSONA AS P LEFT JOIN USUARIO AS U ON P.Dni=U.Dni WHERE U.Id_Usuario IS NULL AND P.Dni LIKE ? OR P.ApellidoPaterno LIKE ? """
+	params=("%"+datos+"%","%"+datos+"%")
+	datos=None
+	try:
+		rows=objConsulta.ConsultaMainDocParams(sql,params)
+		datos=[{'dni':val.Dni,'datos':val.Nombre+" "+val.ApellidoPaterno+" "+val.ApellidoMaterno} for val in rows]
+
+	except Exception as e:
+		raise e
+	return jsonify({'datos':datos})
+
+@puser_bp.route('/searchoficinauser',methods=['POST'])
+def searchoficinauser():
+	objConsulta=QueryDocumentos()
+	parametro=request.form.get('datos')
+	sql="SELECT Id_Oficina,nombre_oficina FROM Oficina WHERE nombre_oficina LIKE ?"
+	params=("%"+parametro+"%",)
+	datos=None
+	try:
+		rows=objConsulta.ConsultaMainDocParams(sql,params)
+		datos=[{'codigo':val.Id_Oficina,'nombre':val.nombre_oficina} for val in rows]
+
+	except Exception as e:
+		raise e
+
+	return jsonify({'datos':datos})
+
+@puser_bp.route('/loadroluser',methods=['POST'])
+def loadRolUser():
+	objConsulta=QueryDocumentos()
+	sql="SELECT * FROM Roles"
+	datos=None
+	try:
+		rows=objConsulta.ConsultaMainDoc(sql)
+		datos=[{'idrol':val.Id_Rol,'nombre':val.Nombre_Rol} for val in rows]
+	except Exception as e:
+		raise e
+	return jsonify({'datos':datos})
+
+
+
+
 
 
 	

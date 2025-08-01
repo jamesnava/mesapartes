@@ -7,6 +7,95 @@
   <span>{{info.usuario}}</span>
 {%endblock%}
 {%block content%}
+<div>
+<div class="titulomodulo">
+  <button class="btn btn-success" id="btninsertuser"><i class="fas fa-user-plus" title="Agregar"></i></button>
+</div>
+<div class="titulomodulo">
+  <label>buscar</label>
+  <input type="text" name="" id="buscarusertxt">
+</div>
+<div class="contenedorgeneralHistorial">
+  <div class="tabla-contenedor">
+  <div class="card mt-4  shadow">
+  <div class="card-header bg-primary text-white contenedordocumento">
+    <h5 class="mb-0">Registro de Usuarios</h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle mb-0 tabla-controlada">
+        <thead class="table-light text-center">
+          <tr>
+            <th>Dni</th>
+            <th>Datos</th>
+            <th>Usuario</th>
+            <th>Oficina</th>            
+            <th>Estado</th>                      
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-center" id="tableusers">
+         {%for val in rows%}
+         <tr>
+         <td>{{val.Dni}}</td>
+         <td>{{val.Nombre}} {{val.ApellidoPaterno}} {{val.ApellidoMaterno}} </td>
+         <td>{{val.Nombre_Usuario}} </td>
+         <td>{{val.nombre_oficina}} </td>
+         <td>{{val.Estado}}</td>
+         <td>
+            <button class="btn btn-info btneditarperson" data-id="" ><i class="fas fa-pencil" aria-hidden="true" title="Editar"></i></button>
+            <button class="btn btn-primary btnchangestate" data-deldni="" ><i class="fas fa-toggle-on" aria-hidden="true" title="cambiar estado"></i></button>
+
+         </td>
+         </tr>
+         {%endfor%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="modal fade" id="insertarusuario" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Agregar nuevo usuario</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      <form id="formulariousuario">         
+         <label>Datos</label>
+         <input type="text" name="datouseru" class="form-control" id="datosuser" data-dni="">
+         <div id="iddivdatosusers" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div> 
+
+         <label>Usuario</label>
+         <input type="text" name="emailp" class="form-control">
+         <label>Contraseña</label>
+         <input type="password" name="passwordu" id="passwordu" class="form-control">
+         <label>Oficina</label>
+         <input type="text" name="oficinau" id="oficinau" data-codigoO class="form-control">
+         <div id="iddivoficinausers" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div> 
+
+         <label>Rol</label>
+         <select class="form-select" id="selectroluser">
+           <option>...</option>
+         </select>
+      </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="insertuser">Grabar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
+      </div>
+
+    </div>
+
+  </div>
+</div>
 
 
 {%endblock%}

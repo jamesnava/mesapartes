@@ -16,7 +16,7 @@ def GeneracionCodigoOficina(logintud):
 def generarTicket(rows,oficinas,direccion):	
 	w, h = 80 * mm, 200 * mm
 	c = canvas.Canvas(direccion, pagesize=(w, h))
-
+	c.drawImage("logo.png", 50, h - 200, width=50, height=50)
 	c.drawString(20, h - 30, "Resumen del ingreso del documento")
 	c.drawString(20, h - 60, f"Dni Emisor: {rows[0].Dni}")
 	c.drawString(20, h - 80, f"Emisor: {rows[0].emisor}")
