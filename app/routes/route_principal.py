@@ -2,6 +2,8 @@ from flask import Blueprint, render_template,redirect,url_for,request,g
 from flask_login import current_user,login_required
 from app.modelos.QueryLogin import QueryL
 from app.modelos.QueryDocumento import QueryDocumentos
+from app.decoratos import requires_permission
+from app.constanst import Permiso
 
 main_bp=Blueprint('main',__name__,url_prefix='/main')
 
@@ -12,22 +14,28 @@ def cargar_usuario():
 		sql=f"""SELECT * FROM USUARIO WHERE Id_Usuario=?"""
 		g.user=obj_consulta.cargarUsuario(sql,(current_user.id))
 
+
 @main_bp.route("/principal")
 @login_required
-def principal():
+def principal():		
 	return render_template('/start/main.html',usuario=current_user.username)
 
 @main_bp.route("/roles")
+@requires_permission(Permiso.ROL,Permiso.PERMISO)
 @login_required
 def rolesPermisos():
 	return render_template('/roles/menuroles.html')
 
 @main_bp.route('/documentos')
+@requires_permission(Permiso.DOCUMENTO)
+@login_required
 def documentos():
 	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
 	return render_template('/documentos/doc_principal.html',datos=datos)
 
 @main_bp.route('/oficinap')
+@requires_permission(Permiso.OFICINA)
+@login_required
 def oficinaplantilla():
 	objConsulta=QueryDocumentos()
 	sql="SELECT * FROM Oficina"
@@ -36,6 +44,8 @@ def oficinaplantilla():
 	return render_template('/oficinas/Oficinas.html',info=datos,rows=rows_consulta)
 
 @main_bp.route('/peruser')
+@requires_permission(Permiso.PERSONA,Permiso.USUARIO)
+@login_required
 def userperson():
 	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
 	return render_template('/personas/peruserprincipal.html',info=datos)

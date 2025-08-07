@@ -1,28 +1,34 @@
-{%extends "roles/menuroles.html"%}
+ {%extends "roles/menuroles.html"%}
+ 
+ {%block info%}
+<input type="hidden" id="usuario_id" value="{{info.dni}}">
+<input type="hidden" id="oficina" value="{{info.oficina}}">  
+  <h6>Usuario: </h6>
+  <span>{{info.usuario}}</span>
+{%endblock%}
 
 {%block content%}
 <div >
   <div class="titulomodulo">
    <h1>Modulos</h1>
  </div>
- <div class="contenedorgeneralH">
-  <div class="row">
-    <div class="col-4"></div>
-    <div class="col-4"> <div class="submenubutton" data-bs-toggle="modal" data-bs-target="#AgregarModulos">Agregar</div></div>
-    <div class="col-4"></div>
-  </div> 
-
+ <div class="titulomodulo">  
+    <button class="btn btn-outline-primary" id="btnaddmodulo"> <i class="fa fa-plus-square" aria-hidden="true" title="Agregar"></i></button>
 </div>
 
-<div class="contenedorgeneralB">
-  <div class="row">
-    <div class="col-4"></div>
-    <div class="col-4">
-      <table class="table table-dark">
+<div class="contenedorgeneralHistorial" style="margin-top: 5px;">
+  <div class="tabla-sm">
+    <div class="card mt-4  shadow">
+    <div class="card-header bg-primary text-white contenedordocumento">
+      <h5 class="mb-0">Módulos</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle mb-0 tabla-controlada">
         <thead>
           <tr>
             
-            <th scope="col">Nro</th>
+            <th scope="col">Numeracion</th>
             <th scope="col">Denominacion</th>
             <th scope="col">Acciones</th>
 
@@ -33,14 +39,19 @@
           <tr>
             <th scope="row">{{val.Id_Permiso}}</th>
             <td>{{val.Nombre_Permiso}}</td>
-            <td><button class=" btn btn-primary">Editar</button> </td>            
+            <td>
+              <button class=" btn btn-success editmodulo" data-codigo={{val.Id_Permiso}} ><i class="fas fa-pencil-square" aria-hidden="true"></i></button>
+              <button class=" btn btn-danger delmodulo" data-codigo={{val.Id_Permiso}} ><i class="fas fa-trash" aria-hidden="true"></i></button> 
+            </td>            
           </tr>
           {%endfor%}        
         </tbody>
       </table>
     </div>
-    <div class="col-4"></div>
+    </div>
+   </div>
   </div>
+</div>
 </div>
 </div>
 

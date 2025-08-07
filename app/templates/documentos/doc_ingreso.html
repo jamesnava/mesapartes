@@ -1,178 +1,280 @@
 {%extends "/start/main.html"%}
 {%block info%}
-<input type="hidden" id="usuario_id" value="{{info.dni}}">
-<input type="hidden" id="oficina" value="{{info.oficina}}">  
-  <h6>Usuario: </h6>
-  <span>{{info.usuario}}</span>
+<input id="usuario_id" type="hidden" value="{{info.dni}}"/>
+<input id="oficina" type="hidden" value="{{info.oficina}}"/>
+<h6>
+    Usuario:
+</h6>
+<span>
+    {{info.usuario}}
+</span>
 {%endblock%}
 {%block content%}
-
 <div>
-  <div class="titulomodulo">
-   <h1>Documentos Pendientes a recepcion</h1>
- </div>
- <div class="contenedorgeneralH">
-  <table class="table table-bordered">
-  <thead>
-    <tr>
-      
-      <th>Fecha</th>
-      <th>Titulo</th>
-      <th>Emisor</th>
-      <th>Tipo</th>
-      <th>Asunto</th>
-      <th>Oficina Origen</th>
-      <th>Prioridad</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody id="tablaBandeja">
-   {%for val in datos%}
-   <tr>
-   	<td>{{val.FechaFormateada}}</td>
-    <td>{{val.Titulo}}</td>
-   	<td>{{val.NEmisor}}</td>
-   	<td>{{val.Nombre_TipoDocumento}}</td>
-   	<td>{{val.Asunto}}</td>
-   	<td>{{val.nombre_oficina}}</td>
-   	<td>{{val.Nombre_Prioridad}}</td>
-   	<td>
-      <button type="button" class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}"><i class="fas fa-file-pdf" title="Ver documento"></i>
-      </button> 
-      <button type="button" class="btn btn-success recepcionardoc" data-idmovimiento="{{val.Id_Movimiento}}"><i class="fas fa-check-circle" title="Recepcionar documento"></i></button>
-    <button type="button" class="btn btn-danger comentarios" data-idmovimiento="{{val.Id_Movimiento}}"><i class="fas fa-comments" title="Ver datos adicionales"></i></button>
-    </td>
-   </tr>
-   {%endfor%}
-  </tbody>
-</table>
-
-
+    <div class="titulomodulo">
+        <h3>
+            Documentos Pendientes a recepcion
+        </h3>
+    </div>
+    <div class="contenedorgeneralHH" data-simplebar="">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">
+                        Fecha
+                    </th>
+                    <th>
+                        Titulo
+                    </th>
+                    <th>
+                        Emisor
+                    </th>
+                    <th style="width:6%;">
+                        Tipo
+                    </th>
+                    <th>
+                        Asunto
+                    </th>
+                    <th>
+                        Oficina Origen
+                    </th>
+                    <th style="width:5%;align-content: center;">
+                        Prioridad
+                    </th>
+                    <th>
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tablaBandeja">
+                {%for val in datos%}
+                <tr>
+                    <td>
+                        {{val.FechaFormateada}}
+                    </td>
+                    <td>
+                        {{val.Titulo}}
+                    </td>
+                    <td>
+                        {{val.NEmisor}}
+                    </td>
+                    <td>
+                        {{val.Nombre_TipoDocumento}}
+                    </td>
+                    <td>
+                        {{val.Asunto}}
+                    </td>
+                    <td>
+                        {{val.nombre_oficina}}
+                    </td>
+                    <td style="text-align: center;">
+                        <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'Inmediata' %}prioridad-inmediata {% elif val.Nombre_Prioridad == 'Alta' %}prioridad-alta {% elif val.Nombre_Prioridad == 'Media' %}prioridad-media {% elif val.Nombre_Prioridad == 'Baja' %}prioridad-baja {% elif val.Nombre_Prioridad == 'Muy Baja' %}prioridad-muy-baja {% endif %}" title="{{val.Nombre_Prioridad}}">
+                        </i>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}" type="button">
+                            <i class="fas fa-file-pdf" title="Ver documento">
+                            </i>
+                        </button>
+                        <button class="btn btn-success recepcionardoc" data-idmovimiento="{{val.Id_Movimiento}}" type="button">
+                            <i class="fas fa-check-circle" title="Recepcionar documento">
+                            </i>
+                        </button>
+                        <button class="btn btn-danger comentarios" data-idmovimiento="{{val.Id_Movimiento}}" type="button">
+                            <i class="fas fa-comments" title="Ver datos adicionales">
+                            </i>
+                        </button>
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
+    <div class="titulomodulo">
+        <h3>
+            Documentos recepcionados
+        </h3>
+    </div>
+    <div class="contenedorgeneralB" data-simplebar="">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">
+                        Fecha
+                    </th>
+                    <th>
+                        Titulo
+                    </th>
+                    <th>
+                        Emisor
+                    </th>
+                    <th style="width:6%;">
+                        Tipo
+                    </th>
+                    <th>
+                        Asunto
+                    </th>
+                    <th>
+                        Oficina Origen
+                    </th>
+                    <th style="width:5%;">
+                        Prioridad
+                    </th>
+                    <th style="width:5%;">
+                        Cod. Seg.
+                    </th>
+                    <th>
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tablaBandeja">
+                {%for val in datos_recepcion%}
+                <tr>
+                    <td>
+                        {{val.FechaFormateada}}
+                    </td>
+                    <td>
+                        {{val.Titulo}}
+                    </td>
+                    <td>
+                        {{val.NEmisor}}
+                    </td>
+                    <td>
+                        {{val.Nombre_TipoDocumento}}
+                    </td>
+                    <td>
+                        {{val.Asunto}}
+                    </td>
+                    <td>
+                        {{val.nombre_oficina}}
+                    </td>
+                    <td style="text-align:center;">
+                        <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'Inmediata' %}prioridad-inmediata {% elif val.Nombre_Prioridad == 'Alta' %}prioridad-alta {% elif val.Nombre_Prioridad == 'Media' %}prioridad-media {% elif val.Nombre_Prioridad == 'Baja' %}prioridad-baja {% elif val.Nombre_Prioridad == 'Muy Baja' %}prioridad-muy-baja {% endif %}" title="{{val.Nombre_Prioridad}}">
+                        </i>
+                    </td>
+                    <input id="idmov" name="" type="hidden" value="{{val.Id_Movimiento}}"/>
+                    <td>
+                        {{val.CodigoSeguimiento}}
+                    </td>
+                    <td>
+                        <button class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}" type="button">
+                            <i class="fas fa-file-pdf" title="Ver documento">
+                            </i>
+                        </button>
+                        <button class="btn btn-success acciones" data-idmovimiento="{{val.Id_Movimiento}}" type="button">
+                            <i class="fas fa-paper-plane" title="Acciones">
+                            </i>
+                        </button>
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
 </div>
-<div class="titulomodulo">
-   <h1>Documentos recepcionados</h1>
-</div>
-<div class="contenedorgeneralB">
-    <table class="table table-bordered">
-  <thead>
-    <tr>
-      
-      <th>Fecha</th>
-      <th>Titulo</th>
-      <th>Emisor</th>
-      <th>Tipo</th>
-      <th>Asunto</th>
-      <th>Oficina Origen</th>
-      <th>Prioridad</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody id="tablaBandeja">
-   {%for val in datos_recepcion%}
-   <tr>
-    <td>{{val.FechaFormateada}}</td>
-    <td>{{val.Titulo}}</td>
-    <td>{{val.NEmisor}}</td>
-    <td>{{val.Nombre_TipoDocumento}}</td>
-    <td>{{val.Asunto}}</td>
-    <td>{{val.nombre_oficina}}</td>
-    <td>{{val.Nombre_Prioridad}}</td>
-    <input type="hidden" name="" id="idmov" value="{{val.Id_Movimiento}}">
-    <td><button type="button" class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}"><i class="fas fa-file-pdf" title="Ver documento"></i></button> 
-      <button type="button" class="btn btn-success acciones" data-idmovimiento="{{val.Id_Movimiento}}"><i class="fas fa-paper-plane" title="Acciones"></i></button></td>
-   </tr>
-   {%endfor%}
-  </tbody>
-  
-</table>
-</div>
-
-
-</div>
-
 <!--previsualizar archivo adjunto-->
-<div class="modal fade" id="verpdf" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Documento Adjunto</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <iframe id="visorPDF" src="" width="100%" height="600px" style="border:none;"></iframe>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
-      </div>
-    </div>
-  </div>
-</div>
-
-<!--previsualizar comentarios-->
-<div class="modal fade" id="vercomentarios" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Información Adicional</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <span id="spancomentarios"></span>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
-      </div>
-    </div>
-  </div>
-</div>
-
-<!--derivar-->
-<div class="modal fade" id="veracciones" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Acciones a realizar</h1>        
-      </div>
-      <div class="modal-body">
-        <h5>Acciones disponibles para el documento:--</h5>
-
-        <select id="tipoAccion" class="form-select">
-          
-        </select>
-
-        <!-- Mostrar si es derivar -->
-        <div id="panelDerivar" style="display:none;">
-          <label>Derivar a Oficina:</label>
-          <input type="text" class="form-control" id="oficinaDestino">
-          <div id="iddivdestinoD" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div>
-
-          <table class="table" id="tableoficinasD">
-           <thead>
-              <tr>
-               <th scope="col">codigo</th>
-               <th scope="col">Oficina</th>
-               <th scope="col"></th>      
-              </tr>
-             </thead>
-             <tbody>
-    
-           </tbody>
-          </table>             
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="verpdf" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Documento Adjunto
+                </h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe height="600px" id="visorPDF" src="" style="border:none;" width="100%">
+                </iframe>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+            </div>
         </div>
-
-        <label>Comentario (opcional):</label>
-        <textarea id="comentarioAccion" class="form-control"></textarea>
-
-        
-
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>  
-        <button type="button" class="btn btn-primary" id="btnConfirmarAccion">Confirmar</button>  
-      </div>
     </div>
-  </div>
 </div>
-
+<!--previsualizar comentarios-->
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="vercomentarios" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Información Adicional
+                </h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <span id="spancomentarios">
+                </span>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--derivar-->
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="veracciones" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Acciones a realizar
+                </h1>
+            </div>
+            <div class="modal-body">
+                <h5>
+                    Acciones disponibles para el documento:--
+                </h5>
+                <select class="form-select" id="tipoAccion">
+                </select>
+                <!-- Mostrar si es derivar -->
+                <div id="panelDerivar" style="display:none;">
+                    <label>
+                        Derivar a Oficina:
+                    </label>
+                    <input class="form-control" id="oficinaDestino" type="text">
+                        <div id="iddivdestinoD" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;">
+                        </div>
+                        <table class="table" id="tableoficinasD">
+                            <thead>
+                                <tr>
+                                    <th scope="col">
+                                        codigo
+                                    </th>
+                                    <th scope="col">
+                                        Oficina
+                                    </th>
+                                    <th scope="col">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </input>
+                </div>
+                <label>
+                    Comentario (opcional):
+                </label>
+                <textarea class="form-control" id="comentarioAccion">
+                </textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+                <button class="btn btn-primary" id="btnConfirmarAccion" type="button">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {%endblock%}

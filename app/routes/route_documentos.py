@@ -11,6 +11,7 @@ from datetime import datetime
 
 documento_bp=Blueprint('documents',__name__,url_prefix='/documents')
 
+
 @documento_bp.route('/nuevodoc',methods=['POST'])
 def nuevodocumento():
 	objConsulta=QueryDocumentos()
@@ -421,12 +422,12 @@ def ConsultaDocumentos(params):
 
 	SELECT FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
 	CONCAT(P.Nombre,' ',P.ApellidoPaterno,' ',P.ApellidoMaterno) AS NEmisor,TD.Nombre_TipoDocumento,
-	D.Asunto,O.nombre_oficina,TP.Nombre_Prioridad,A.url_archivo,D.Titulo,M.Id_Movimiento
+	D.Asunto,O.nombre_oficina,TP.Nombre_Prioridad,A.url_archivo,D.Titulo,M.Id_Movimiento,D.CodigoSeguimiento
 	FROM UltimosMovimientos M
 	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento INNER JOIN PERSONA AS P ON D.Emisor=P.Dni
 	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento
 	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina INNER JOIN Adjunto AS A ON D.Id_Adjunto=A.Id_Adjunto
-	WHERE M.fila = 1 AND D.Estado IN (?,?);"""
+	WHERE M.fila = 1 AND D.Estado IN (?,?) ORDER BY M.Fecha_Movimiento DESC;"""
 	rows=objConsulta.ConsultaMainDocParams(sql,params)
 	return rows
 def consultaDocumentosEntrada(params):
@@ -449,7 +450,7 @@ def consultaDocumentosEntrada(params):
 	INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento
 	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen = O.Id_Oficina
 	INNER JOIN Adjunto AS A ON D.Id_Adjunto = A.Id_Adjunto
-	WHERE M.fila = 1 AND M.Tipo_Flujo = 'Egreso'  AND M.Id_Oficina_Destino = ?  AND D.Estado IN (1, 3)"""
+	WHERE M.fila = 1 AND M.Tipo_Flujo = 'Egreso'  AND M.Id_Oficina_Destino = ?  AND D.Estado IN (1, 3) ORDER BY M.Fecha_Movimiento DESC"""
 	rows=objConsulta.ConsultaMainDocParams(sql,params)
 	return rows
 

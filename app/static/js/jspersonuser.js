@@ -151,8 +151,7 @@ $(document).ready(function(){
 			url:'/puser/searchperson',
 			data:{'datos':valor},
 			success:function(response){
-				$('#tablehistorico').empty();
-				console.log(response);
+				$('#tablehistorico').empty();				
 				$.each(response.datos,function(index,valores){
 					$('#tablehistorico').append(`<tr>
 						<td>${valores.dni}</td>
@@ -198,13 +197,13 @@ $(document).ready(function(){
 			type:'POST',
 			url:'/puser/searchpersonwithoutuser',
 			data:{'datos':datos},
-			success:function(response){
-				console.log(response);
+			success:function(response){				
 				var resultadosHtml='';
 				$.each(response.datos,function(index,valores){
 					resultadosHtml+=`<p style="cursor: pointer;background:#666a70" data-id=${valores.dni}>${valores.datos} </p>`;
 					
 				});
+				$('#iddivdatosusers').empty();
 				$('#iddivdatosusers').show();
 				$('#iddivdatosusers').html(resultadosHtml);
 			}
@@ -228,12 +227,12 @@ $(document).ready(function(){
 			type:'POST',
 			url:'/puser/searchoficinauser',
 			data:{'datos':datos},
-			success:function(response){
-				console.log(response);
+			success:function(response){				
 				var resultadosHtml='';
 				$.each(response.datos,function(index,valores){
 					resultadosHtml+=`<p style="cursor: pointer;background:#666a70" data-id=${valores.codigo}>${valores.nombre} </p>`;					
 				});
+				$('#iddivoficinausers').empty();
 				$('#iddivoficinausers').show();
 				$('#iddivoficinausers').html(resultadosHtml);
 			}
@@ -244,11 +243,191 @@ $(document).ready(function(){
 	$('#iddivoficinausers').on('click','p',function(){
 		const datos=$(this).text();
 		const codigo=$(this).data('id');
-		$('#oficinau').attr('data-codigoO',codigo);
+		$('#oficinau').attr('data-codigoo',codigo);
 		$('#oficinau').val(datos);
 		$('#iddivoficinausers').hide();
 
 	});
+
+	$('#insertuser').on('click',function(){
+		const formulario=document.getElementById('formulariousuario');
+		if (!formulario.checkValidity()){
+			formulario.classList.add('was-validated');
+			return;
+		}
+		formData=new FormData(document.getElementById('formulariousuario'));
+		const dni=$('#datosuser').data('dni');
+		const oficina=$('#oficinau').data('codigoo');		
+		formData.append('dni',dni);
+		formData.append('oficina',oficina)
+		$.ajax({
+			url:'/puser/insertsaveuser',
+			type:'POST',
+			data:formData,
+			contentType:false,
+			processData:false,
+			success:function(response){
+				if(response==-1){
+					mostrarMensaje("error","existe un usuario vinculado con este dni");
+					setTimeout(function(){location.reload(true);},1000);
+				}
+				else{
+					if(response==1){
+						mostrarMensaje("success","Registro Exitoso");
+						setTimeout(function(){location.reload(true);},1000);
+					}
+					else{
+						mostrarMensaje("error","no pudo insertarse");
+						setTimeout(function(){location.reload(true);},1000);
+					}
+				}
+			}
+		});
+
+	});
+
+	$('.btnchangestate').on('click',function(){
+		const dni=$(this).data('dni');
+		$.ajax({
+			url:'/puser/changestate',
+			type:'POST',
+			data:{'dni':dni} ,
+			success:function(response){
+				if (response==1){
+					mostrarMensaje("success","Actualizacion correcta")
+					setTimeout(function(){location.reload(true);},1000);
+				}
+				else{
+					mostrarMensaje("error","error!")
+					setTimeout(function(){location.reload(true);},1000);
+				}
+
+			}
+		});
+
+	});
+
+
+$('.btnchangeoficina').on('click',function(){
+	$('#modalchangeoficina').modal('show');
+	//let identificador=	
+	$('#ofhidden').val($(this).data('dni'));
+});
+
+$('#oficinachange').on('keyup',function(){
+	let valor=$(this).val();
+	$.ajax({
+		type:'POST',
+		url:'/puser/searchoficinauser',
+		data:{'datos':valor},
+		success:function(response){
+			var resultadosHtml='';
+			$.each(response.datos,function(index,valores){
+				resultadosHtml+=`<p style="cursor: pointer;background:#666a70" data-id=${valores.codigo}>${valores.nombre} </p>`
+			});
+
+			$("#iddivoficinachangeusers").empty();
+			$("#iddivoficinachangeusers").show();
+			$("#iddivoficinachangeusers").append(resultadosHtml);
+
+		}
+
+	});
+
+});
+
+$('#iddivoficinachangeusers').on('click','p',function(){
+		const datos=$(this).text();
+		const codigo=$(this).data('id');
+		$('#oficinachange').attr('data-codigooficinai',codigo);
+		$('#oficinachange').val(datos);
+		$('#iddivoficinachangeusers').hide();
+
+	});
+
+$('#grabarupdateoficinauser').on('click',function(){
+	let dni=$('#ofhidden').val();
+	let oficina=$('#oficinachange').data('codigooficinai');
+	$.ajax({
+		type:'POST',
+		url:'/puser/updateoficinauser',
+		data:{'dni':dni,'oficina':oficina},
+		success:function(response){
+			if(Number(response)){
+				mostrarMensaje('success','Actualización exitosa');
+				setTimeout(function(){location.reload(true)},100);
+			}
+			else{mostrarMensaje('error','No pudo actualizarse');
+				setTimeout(function(){location.reload(true)},100);}
+		}
+	});
+
+});
+
+$('.btnchangeclave').on('click',function(){
+	let dni=$(this).data('dni');
+	$('#userhiddenclave').val(dni);
+	$('#modalchangepassword').modal('show');
+});
+
+$('#grabarupdatepassworduser').on('click',function(){
+	$.ajax({
+		type:'POST',
+		url:'/puser/updatepassworduser',
+		data:{'dni':$('#userhiddenclave').val(),'clave':$('#passwordchange').val()},
+		success:function(response){
+			if (Number(response)){
+				mostrarMensaje('success','Se actualizó correctamente!!')
+				setTimeout(function(){location.reload(true);},1000);
+			}
+			else{
+				mostrarMensaje('error','No pudo actualizar!!')
+				setTimeout(function(){location.reload(true);},1000);
+			}
+
+		}
+	});
+});
+
+$('.btnaddperfiluser').on('click',function(){
+	$('#addperfiluser').modal('show');
+	$('#userhiddenperfil').val($(this).data('dni'));
+	$.ajax({
+		type:'POST',
+		url:'/puser/cargarperfil',
+		success:function(response){
+			htmselect=$('#selectperfil');
+			htmselect.empty();
+			$.each(response.datos,function(index,valores){
+				htmselect.append(`<option value=${valores.id}>${valores.nombre}</option>`);
+			});
+
+		}
+	});
+});
+
+$('#grabarupdateperfiluser').on('click',function(){
+	let dni=$('#userhiddenperfil').val();
+	let rol=$('#selectperfil').val();
+	$.ajax({
+		type:'POST',
+		url:'/puser/grabacambioperfil',
+		data:{'dni':dni,'rol':rol},
+		success:function(response){
+			if (response==1){
+				mostrarMensaje('success','Exitoso!');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+			else{
+				mostrarMensaje('error','no pudo actualizar!');
+				setTimeout(function(){location.reload(true);},1000);
+
+			}
+		}
+	});
+
+
+});
 
 
 });

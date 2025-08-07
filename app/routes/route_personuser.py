@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect,request,jsonify,request
 from flask_login import current_user,login_required
 from app.modelos.QueryDocumento import QueryDocumentos
+from werkzeug.security import generate_password_hash
 
 puser_bp=Blueprint('puser',__name__,url_prefix='/puser')
 
@@ -144,6 +145,105 @@ def loadRolUser():
 	except Exception as e:
 		raise e
 	return jsonify({'datos':datos})
+
+@puser_bp.route('/insertsaveuser',methods=['POST'])
+def saveUser():
+
+	dni=request.form.get('dni')
+	usuario=request.form.get('useruser')
+	contrasenia= generate_password_hash(request.form.get('passworduser')) 
+	oficina=request.form.get('oficina')
+	rol=request.form.get('selectroluser')
+	objConsulta=QueryDocumentos()
+	#reestriccion
+	sql="""SELECT * FROM USUARIO WHERE Dni=? OR Nombre_Usuario=? """
+	rows_users=objConsulta.ConsultaMainDocParams(sql,(dni,usuario))
+	controlador=None
+	if rows_users:
+		controlador=-1
+	else:
+		try:
+			sql_insert="""INSERT INTO USUARIO(Nombre_Usuario,Contrasena,Id_Oficina,Id_Rol,Estado,Dni)
+			VALUES(?,?,?,?,'ACTIVO',?)"""
+			params=(usuario,contrasenia,oficina,rol,dni)
+			controlador=objConsulta.InsertDataGeneral(sql_insert,params)
+		except Exception as e:
+			controlador=0
+			print(e)
+
+	return [controlador]
+
+@puser_bp.route('/changestate',methods=['POST'])
+def changeState():
+	dni=request.form.get('dni')
+	sql="UPDATE USUARIO SET Estado=? WHERE Dni=?"
+	objConsulta=QueryDocumentos()
+	controlador=None
+	try:
+		rows = objConsulta.ConsultaMainDocParams("SELECT Estado FROM USUARIO WHERE Dni=?",(dni,))
+		if rows[0].Estado=="ACTIVO":
+			controlador=objConsulta.InsertDataGeneral(sql,('INACTIVO',dni))
+		else:
+			controlador=objConsulta.InsertDataGeneral(sql,('ACTIVO',dni))
+
+	except Exception as e:
+		controlador=0
+	return [controlador]
+
+@puser_bp.route('/updateoficinauser',methods=['POST'])
+def updateOficinaUser():
+	dni=request.form.get('dni')
+	codigo=request.form.get('oficina')
+	objConsulta=QueryDocumentos()
+	controlador=None
+	try:
+		controlador=objConsulta.InsertDataGeneral("UPDATE USUARIO SET Id_Oficina=? WHERE Dni=?",(codigo,dni))
+
+	except Exception as e:
+		controlador=0
+		raise e
+	return [controlador]
+
+@puser_bp.route('/updatepassworduser',methods=['POST'])
+def updatePasswordUser():
+	dni=request.form.get('dni')
+	clave=generate_password_hash(request.form.get('clave'))
+	sql="UPDATE USUARIO SET Contrasena=? WHERE Dni=?"
+	objConsulta=QueryDocumentos()
+	controlador=None
+	try:
+		controlador=objConsulta.InsertDataGeneral(sql,(clave,dni))
+	except Exception as e:
+		controlador=0
+		raise e
+	return [controlador]
+
+@puser_bp.route('/cargarperfil',methods=['POST'])
+def cargarperfil():
+	sql="SELECT * FROM Roles"
+	objConsulta=QueryDocumentos()
+	datos=[]
+	try:
+		rows=objConsulta.ConsultaMainDoc(sql)
+		datos=[{'id':val.Id_Rol,'nombre':val.Nombre_Rol} for val in rows]
+	except Exception as e:
+		raise e
+
+	return jsonify({'datos':datos})
+
+@puser_bp.route('/grabacambioperfil',methods=['POST'])
+def changeProfile():
+	numero=0
+	dni=request.form.get('dni')
+	idperfil=request.form.get('rol')
+	sql="UPDATE USUARIO SET Id_Rol=? WHERE Dni=?"
+	objConsulta=QueryDocumentos()
+	try:
+		numero=objConsulta.InsertDataGeneral(sql,(idperfil,dni))
+	except Exception as e:
+		numero=0
+	return jsonify(numero)
+
 
 
 

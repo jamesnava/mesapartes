@@ -1,26 +1,40 @@
 {%extends "/start/main.html"%}
 
 {%block info%}
-<input type="hidden" id="usuario_id" value="{{info.dni}}">
-<input type="hidden" id="oficina" value="{{info.oficina}}">  
-  <h6>Usuario: </h6>
-  <span>{{info.usuario}}</span>
-{%endblock%}
+<input id="usuario_id" type="hidden" value="{{info.dni}}">
+    <input id="oficina" type="hidden" value="{{info.oficina}}">
+        <h6>
+            Usuario:
+        </h6>
+        <span>
+            {{info.usuario}}
+        </span>
+        {%endblock%}
 {%block content%}
-<div class="contenedorinterno">
-	<div class="menubutton">
-			<a href="{{url_for('puser.templateUser')}}">
-			<img src="{{url_for('static',filename='/img/usuario.png')}}" width="90" height="90">
-			<h3>Usuario</h3>
-			</a>
-		</div>
-		<div class="menubutton">
-			<a href="{{url_for('puser.templatePerson')}}" >
-			<img src="{{url_for('static',filename='/img/personal.png')}}" width="90" height="90">
-			<h3>Persona</h3>
-			</a>
-		</div>
-	
-</div>
-
-{%endblock%}
+        <div class="contenedorinterno">
+            {%if 'USUARIO' in permisos%}
+            <div class="menubutton">
+                <a href="{{url_for('puser.templateUser')}}">
+                    <img height="90" src="{{url_for('static',filename='/img/usuario.png')}}" width="90">
+                        <h3>
+                            Usuario
+                        </h3>
+                    </img>
+                </a>
+            </div>
+            {%endif%}
+		{%if 'PERSONA' in permisos%}
+            <div class="menubutton">
+                <a href="{{url_for('puser.templatePerson')}}">
+                    <img height="90" src="{{url_for('static',filename='/img/personal.png')}}" width="90">
+                        <h3>
+                            Persona
+                        </h3>
+                    </img>
+                </a>
+            </div>
+            {%endif%}
+        </div>
+        {%endblock%}
+    </input>
+</input>

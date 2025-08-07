@@ -1,81 +1,166 @@
 {%extends "roles/menuroles.html"%}
+{%block info%}
+<input id="usuario_id" type="hidden" value="{{info.dni}}"/>
+<input id="oficina" type="hidden" value="{{info.oficina}}"/>
+<h6>
+    Usuario:
+</h6>
+<span>
+    {{info.usuario}}
+</span>
+{%endblock%}
 
 {%block content%}
-<div >
-	<div class="titulomodulo">
-		<h1>Crear Roles</h1>
-	</div>
-	<div class="contenedorgeneralH">		
-		<div class="row">			
-			<div class="col-6">
-				<div class="row">
-					<div class="col">Roles</div>
-				</div>
-				<div class="row mt-2">
-					<div class="col-4"></div>
-					<div class="col-4">
-						<div class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AgregarModulos">Agregar</div>
-					</div>
-					<div class="col-4"></div>
-
-				</div>
-
-				<div class="row mt-2">
-					<div class="col-12">
-						<table class="table">
-							<thead class="table-dark">
-								<tr>
-									<td>Nro</td>
-									<td>Denominacion</td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td>1</td>
-									<td>Administrador</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</div>
-
-			</div>
-
-			<div class="col-6">
-				<div class="row">
-					<div class="col">Perfiles</div>
-				</div>
-				<div class="row mt-2">
-					<div class="col">Perfil</div>
-					<div class="col">Rol</div>
-				</div>
-				<div class="row mt-4">
-					<div class="col-6">
-						<select class="form-select">
-							<option>...</option>
-						</select>
-					</div>
-					<div class="col-6">
-						<select class="form-select">
-							<option>...</option>
-						</select>
-					</div>
-				</div>
-			</div>
-
-		</div>
-
-
-	</div>
-
-	<div class="contenedorgeneralB">
-		<div class="row">
-			<div class="col-4"></div>
-			<div class="col-4" >
-				f
-			</div>
-			<div class="col-4"></div>
-		</div>
-	</div>
+<div class="contenedorgeneralH">
+    <div class="contenedormediano" data-simplebar="">
+        <div class="contenedorpequnio" data-simplebar="">
+            <div class="card mt-4 shadow">
+                <div class="card-header bg-primary text-white contenedordocumento">
+                    <h5 class="mb-0">
+                        Roles
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th>
+                                    </th>
+                                    <th>
+                                        Codigo
+                                    </th>
+                                    <th>
+                                        Denominacion
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {%for val in rows%}
+                                <tr>
+                                    <td>
+                                        <input class="fila-check checkperfil" data-id="{{val.Id_Rol}}" type="checkbox"/>
+                                    </td>
+                                    <td>
+                                        {{val.Id_Rol}}
+                                    </td>
+                                    <td>
+                                        {{val.Nombre_Rol}}
+                                    </td>
+                                </tr>
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="contenedorpequnio" data-simplebar="">
+            <div class="card mt-4 shadow">
+                <div class="card-header bg-primary text-white contenedordocumento">
+                    <h5 class="mb-0">
+                        Modulos
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th>
+                                        Codigo
+                                    </th>
+                                    <th>
+                                        Modulo
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center" id="perfilesmodulo">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%;display: flex; justify-content: center; align-items: center; height: 100px;">
+            <button class="btn btn-primary" id="createperfil">
+                Grabar
+            </button>
+        </div>
+    </div>
+    <div>
+        <button class="btn btn-success" id="btnaddroles" style="margin-left:10px;">
+            add Rol
+        </button>
+    </div>
+    <div class="contenedormediano" data-simplebar="" style="margin-left: auto;">
+        <div class="card mt-4 shadow">
+            <div class="card-header bg-primary text-white contenedordocumento">
+                <h5 class="mb-0">
+                    Modulos
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0" id="tablemodulos">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>
+                                </th>
+                                <th>
+                                    Codigo
+                                </th>
+                                <th>
+                                    Modulo
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            {%for val in modulo%}
+                            <tr>
+                                <td>
+                                    <input class="fila-check checkboxm" data-idmo="{{val.Id_Permiso}}" type="checkbox"/>
+                                </td>
+                                <td>
+                                    {{val.Id_Permiso}}
+                                </td>
+                                <td>
+                                    {{val.Nombre_Permiso}}
+                                </td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="Agregarroles" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Ingresar datos
+                </h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <label>
+                    ROL
+                </label>
+                <input class="form-control" id="txtRDenominacion" type="input"/>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+                <button class="btn btn-primary" data-bs-dismiss="modal" id="permisoguardar" type="button">
+                    Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 {%endblock%}

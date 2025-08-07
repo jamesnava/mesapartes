@@ -2,6 +2,7 @@ from app.conexion.conexion import Conexion
 
 class QueryGeneral():
 	def GetData(self,sql):
+		rows=[]
 		try:
 			with Conexion() as con:
 				cursor=con.cursor()
@@ -10,22 +11,31 @@ class QueryGeneral():
 		except Exception as e:
 			raise e
 		finally:
-			if rows:
-				return rows
-			else:
-				return None
+			return rows
 
-	def InsertData(self,sql,params):
+	def GetDataParams(self,sql,params):
+		rows=[]
 		try:
 			with Conexion() as con:
 				cursor=con.cursor()
 				cursor.execute(sql,params)
-				cursor.commit()
+				rows=cursor.fetchall()
 		except Exception as e:
 			raise e
 		finally:
-			if cursor.rowcount==1:
-				return 1
-			else:
-				return 0
+			return rows
+
+	def InsertData(self,sql,params):
+		numero=0		
+		try:
+			with Conexion() as con:
+				cursor=con.cursor()
+				cursor.execute(sql,params)
+				con.commit()
+				numero=cursor.rowcount
+		except Exception as e:
+			numero=0
+		finally:			
+			return numero
+		
 

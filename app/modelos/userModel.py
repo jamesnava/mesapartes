@@ -2,11 +2,12 @@ from flask_login import UserMixin
 
 class User(UserMixin):
 	
-	def __init__(self,id,username,password,oficina):
+	def __init__(self,id,username,password,oficina,estado):
 		self.id=id
 		self.username=username
 		self.password=password
 		self.id_oficina=oficina
+		self.estado=estado
 
 	def is_authenticated(self):
 		return True

@@ -76,7 +76,7 @@ $(document).ready(function(){
 			type:'POST',
 			data:datos,
 			success:function(response){
-				if(response==1){
+				if(response===1){
 					mostrarMensaje('success','Exitoso!')
 					setTimeout(function(){location.reload(true);},1000);
 				}
@@ -103,7 +103,7 @@ $(document).ready(function(){
 			type:'POST',
 			data:datos,
 			success:function(response){
-				if (response== 1){
+				if (response===1){
 					mostrarMensaje('success','Actualizacion correcta!!');
 					setTimeout(function(){location.reload(true);},1000)
 				}

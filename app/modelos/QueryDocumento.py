@@ -54,7 +54,6 @@ class QueryDocumentos():
 			print("Error SQL:", sql)
 			print("Parámetros:", params)
 			print("Mensaje:", e)
-
 		finally:
 			return numero
 
