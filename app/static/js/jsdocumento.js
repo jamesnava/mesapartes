@@ -1,4 +1,24 @@
 $(document).ready(function(){
+  $(document).on('click', '.btnblockdubleclick', function (e) {
+        let $btn = $(this);
+
+    // Si ya se está procesando, cancela
+    if ($btn.data('processing')) {
+        e.preventDefault();
+        e.stopImmediatePropagation(); // Evita que se ejecuten otros handlers del click
+        return false;
+    }
+
+    // Marca como en proceso
+    $btn.data('processing', true);
+
+    // Deshabilita visualmente
+    $btn.prop('disabled', true)
+        .data('texto-original', $btn.text())
+        .text('Procesando...');      
+    });
+
+
 $('#cargarPlantilla').on('click',function(){
 	//cargar numeracion
 	tflujo='Ingreso';
@@ -218,7 +238,7 @@ $('.ver-pdf').on('click',function(){
 });
 
 $('.acciones').on('click',function(){
-
+	
 	$.ajax({
 		url:'/documents/acciones',
 		type:'POST',
@@ -243,7 +263,10 @@ $('#tipoAccion').on('change',function(){
 	}
 });
 
-$('.recepcionardoc').on('click',function(){
+
+
+$('.recepcionardoc').on('click',function(){	
+
 	const id=$(this).data('idmovimiento');
 	const oficina=$('#oficina').val();
 	const idusuario=$('#usuario_id').val();
@@ -253,8 +276,13 @@ $('.recepcionardoc').on('click',function(){
 		data:{'idDoc':id,'oficina':oficina,'idusuario':idusuario},
 		success:function(response){
 			if (response!=0){
-				location.reload(true);
 				mostrarMensaje('success','Recepcionado');
+				setTimeout(function(){location.reload(true);},1000);			
+				
+			}
+			else if(response==-1){
+				mostrarMensaje('error','Se detecto envio doble, el primer registro se ingreso descartando el segundo');
+				setTimeout(function(){location.reload(true)},1000)
 			}
 			else{
 				mostrarMensaje('error','Error!!');
@@ -263,6 +291,8 @@ $('.recepcionardoc').on('click',function(){
 	});
 
 });
+
+
 
 $('#btnConfirmarAccion').on('click',function(){
 	accion=$('#tipoAccion').val();
@@ -280,6 +310,7 @@ $('#btnConfirmarAccion').on('click',function(){
 	});
 
 });
+
 
 $('#btnconsultar').on('click',function(){
 	const codigo=$('#codigoSeguimiento').val();
@@ -440,6 +471,258 @@ $('input[name="rfilter"]').on('change',function(){
 
 });
 
+$('#btndocpendientes').on('keyup',function(){
+let valor=$(this).val();
+$.ajax({
+	type:'POST',
+	url:'/documents/searchdocuments',
+	data:{'valor':valor,'tipo':'RECEPCION'},
+	success:function(response){
+		if (response.tipo=="RECEPCION"){
+			//condicional prioridad
+			tablehtml=$('#tablaBandejapendienterecepcion').empty();
+			$.each(response.datos,function(index,valores){
+				const colorprioridad=obtenerClasePrioridad(valores.nombreprioridad);				
+				tablehtml.append(
+					`<tr>
+					<td>${valores.fecha}</td>
+					<td>${valores.titulo}</td>
+					<td>${valores.nameemisor}</td>
+					<td>${valores.tipodoc}</td>
+					<td>${valores.asunto}</td>
+					<td>${valores.oficina}</td>
+					<td style="text-align: center;">					
+					<i aria-hidden="true" class="fas fa-circle ${colorprioridad}
+					  title="${valores.nombreprioridad}">
+             </i>
+					</td>
+					<td>
+						<button class="btn btn-primary ver-pdf" data-url="${valores.url}" type="button">
+              <i class="fas fa-file-pdf" title="Ver documento"></i>
+            </button>
+            <button class="btn btn-success btnblockdubleclick recepcionardoc" data-idmovimiento="${valores.idmovimiento}" type="button">
+              <i class="fas fa-check-circle" title="Recepcionar documento"></i>
+            </button>
+            <button class="btn btn-danger comentarios" data-idmovimiento="${valores.idmovimiento}" type="button">
+             	<i class="fas fa-comments" title="Ver datos adicionales"></i>
+            </button>
+					</td>
+					</tr>`
+					);
+			});
+		}
+
+	}
+});
+
+});
+
+$('#btndocrecepcionados').on('keyup',function(){
+let valor=$(this).val();
+$.ajax({
+	type:'POST',
+	url:'/documents/searchdocuments',
+	data:{'valor':valor,'tipo':'RECEPCIONADOS'},
+	success:function(response){
+		if (response.tipo=="RECEPCIONADOS"){
+			//condicional prioridad
+			tablehtml=$('#tablaBandejarecepcionados').empty();
+			$.each(response.datos,function(index,valores){
+				const colorprioridad=obtenerClasePrioridad(valores.nombreprioridad);				
+				tablehtml.append(
+					`<tr>
+					<td>${valores.fecha}</td>
+					<td>${valores.titulo}</td>
+					<td>${valores.nameemisor}</td>
+					<td>${valores.tipodoc}</td>
+					<td>${valores.asunto}</td>
+					<td>${valores.oficina}</td>
+					<td style="text-align: center;">					
+					<i aria-hidden="true" class="fas fa-circle ${colorprioridad}
+					  title="${valores.nombreprioridad}">
+             </i>
+					</td>
+					<td>${valores.codseg}</td>
+					<td>
+						 	<button class="btn btn-primary ver-pdf" data-url="${valores.url}" type="button">
+                <i class="fas fa-file-pdf" title="Ver documento"></i>
+              </button>
+              <button class="btn btn-success acciones" data-idmovimiento="${valores.idmovimiento}" type="button">
+                <i class="fas fa-paper-plane" title="Acciones"></i>
+              </button>
+              <button class="btn btn-danger " data-idmovimiento="${valores.idmovimiento}" type="button">
+                <i class="fas fa-undo" title="Revertir"></i>
+              </button>
+					</td>
+					</tr>`
+					);
+			});
+		}
+
+
+	}
+});
+
+});
+
+$('#tablaBandejapendienterecepcion, #tablaBandejarecepcionados').on('click','.ver-pdf',function(){
+	const url=$(this).data('url');
+	$('#visorPDF').attr('src', "/static/uploads/"+url);	
+  $('#verpdf').modal('show');
+});
+
+
+$('#tablaBandejapendienterecepcion').on('click','.recepcionardoc',function(){
+	const id=$(this).data('idmovimiento');
+	const oficina=$('#oficina').val();
+	const idusuario=$('#usuario_id').val();
+	$.ajax({
+		url:'/documents/recepcionardoc',
+		type:'POST',
+		data:{'idDoc':id,'oficina':oficina,'idusuario':idusuario},
+		success:function(response){
+			if (response!=0){				
+				mostrarMensaje('success','Recepcionado');
+				setTimeout(function(){location.reload(true);},1000)
+			}
+			else{
+				mostrarMensaje('error','Error!!');
+			}
+		}
+	});
+
+});
+
+$('#tablaBandejapendienterecepcion').on('click','.comentarios',function(){
+	const idmovimiento=$(this).data('idmovimiento');
+	$('#vercomentarios').modal('show');
+	$.ajax({
+		type:'POST',
+		url:'/documents/vercomentarios',
+		data:{'idmovimiento':idmovimiento},
+		success: function(response){
+			$('#spancomentarios').text('');
+			$('#spancomentarios').text(response.comentarios);
+		}
+
+	});
+
+});
+
+$('#tablaBandejarecepcionados').on('click','.acciones',function(){
+	$('#idmovi').val($(this).data('idmovimiento'));
+	$.ajax({
+		url:'/documents/acciones',
+		type:'POST',
+		
+		success:function(response){
+			$.each(response.acciones,function(index,acciones){
+				$('#tipoAccion').append(`<option value=${acciones.Id_Accion}>${acciones.Nombre_Accion}</option>`);
+			});
+		}
+	});
+	$('#veracciones').modal('show');
+});
+
+
+$('#veracciones').on('click','#btnConfirmarAccion',function(){
+	accion=$('#tipoAccion').val();
+	comentario=$('#comentarioAccion').val();
+	idmovimiento=$('#idmovi').val();
+	const codigo = $('#tableoficinasD tbody tr:first td:first').text();	
+	$.ajax({
+			url:'/documents/confirmaraccion',
+			type:'POST',
+			data:{'accion':accion,'comentario':comentario,'idmovimiento':idmovimiento,'codigoOf':codigo},
+			success:function(response){
+				if (response==1)
+				setTimeout(function(){location.reload(true);},1000);
+			}
+	});
+
+});
+
+$('#buscarobservados').on('keyup',function(){
+	let valor=$(this).val();
+	$.ajax({
+		url:'/documents/searchobservados',
+		type:'POST',
+		data:{'valor':valor},
+		success:function(response){
+			tablehtml=$('#tablebodyobservados');
+			tablehtml.empty();
+			$.each(response.datos,function(index,valores){
+				tablehtml.append(`<tr>
+					<td>${valores.titulo}</td>
+					<td>${valores.asunto}</td>
+					<td>${valores.fecha}</td>
+					<td>${valores.observacion}</td>
+					<td>
+						<button class="btn btn-primary btnsubsanar" data-idmovimientosubsanar="${valores.idmov}" type="button">
+              <i class="fas fa-pencil-square-o" title=" Subsanar"></i>
+            </button>
+					</td>
+					</tr>`);
+			});
+		}
+	});
+});
+
+
+$('#tablebodyobservados').on('click','.btnsubsanar',function(){
+	const idmovimiento=$(this).data('idmovimientosubsanar');
+	$('#idmovimientooculto').val(idmovimiento);
+	$('#modalsubsanar').modal('show');
+
+});
+
+$('#txtbuscarhistorial').on('keyup',function(){
+	let valradio=$('input[name="rfilter"]:checked').val();
+	let tipo=$(this).val();
+	if (valradio){
+		$.ajax({
+			type:'POST',
+			url:'/documents/filterfillhistorico',
+			data:{'radio':valradio,'argumento':tipo},
+			success:function(response){
+				tablehtml=$('#tablehistorico');
+				tablehtml.empty();				
+					$.each(response.datos,function(index,valores){
+						tablehtml.append(`
+						<tr>
+							<td>${valores.numeracion}</td>
+							<td>${valores.titulo}</td>
+							<td>${valores.fecha}</td>
+							<td>${valores.usuario}</td>
+							<td>${valores.oficina}</td>
+							<td>${valores.flujo}</td>
+							<td>${valores.codigo}</td>
+							<td></td>
+						</tr>
+						`);
+					});					
+
+			}
+		});
+
+	}
+	else{
+		mostrarMensaje('error','Seleccion el tipo de registro!');
+	}
+
+});
+
 
 
 });
+
+	function obtenerClasePrioridad(nombrePrioridad) {
+    	switch (nombrePrioridad) {
+        case 'Inmediata': return 'prioridad-inmediata';
+        case 'Alta': return 'prioridad-alta';
+        case 'Media': return 'prioridad-media';
+        case 'Baja': return 'prioridad-baja';
+        case 'Muy Baja': return 'prioridad-muy-baja';
+        default: return '';
+    	}
+			}

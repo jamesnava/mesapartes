@@ -1,150 +1,195 @@
-	{% extends "/start/main.html"%}
+{% extends "/start/main.html"%}
 	{%block info%}
-	<input type="hidden" id="usuario_id" value="{{datos.dni}}">
-	<input type="hidden" id="oficina" value="{{datos.oficina}}">	
-	<h6>Usuario: </h6>
-	<span>{{datos.usuario}}</span>
-	{%endblock%}
+<input id="usuario_id" type="hidden" value="{{datos.dni}}"/>
+<input id="oficina" type="hidden" value="{{datos.oficina}}"/>
+<h6>
+    Usuario:
+</h6>
+<span>
+    {{datos.usuario}}
+</span>
+{%endblock%}
 
 	{%block content%}
-	<div class="contenedorinterno">
-		<div class="menubutton">
-			<a href="#" data-bs-toggle="modal" data-bs-target="#Mnuevodoc", id="cargarPlantilla">
-			<img src="{{url_for('static',filename='/img/newdoc.png')}}" width="90" height="90">
-			<h3>Nuevo</h3>
-			</a>
-		</div>
-
-		<div class="menubutton">
-			<a href="{{url_for('documents.ingresoDocumento')}}">
-			<img src="{{url_for('static',filename='/img/bentrada.png')}}" width="90" height="90">
-			<h3>B. Entrada</h3>
-			</a>
-		</div>
-		<div class="menubutton">
-			<a href="{{url_for('documents.salidasdoc')}}">
-			<img src="{{url_for('static',filename='/img/bsalida.png')}}" width="90" height="90">
-			<h3>B. Salida</h3>
-			</a>
-		</div>
-		<div class="menubutton">
-			<a href="{{url_for('documents.docObservados')}}">
-			<img src="{{url_for('static',filename='/img/observado.png')}}" width="90" height="90">
-			<h3>Obsevados</h3>
-			</a>
-		</div>
-
-		<div class="menubutton">
-			<a href="{{url_for('documents.HistorialDocumentos')}}">
-			<img src="{{url_for('static',filename='/img/historial.png')}}" width="90" height="90">
-			<h3>Historial</h3>
-			</a>
-		</div>
-		<div class="menubutton">
-			<a href="{{url_for('documents.segDocumento')}}">
-			<img src="{{url_for('static',filename='/img/seguimiento.png')}}" width="90" height="90">
-			<h3>Seguimiento</h3>
-			</a>
-		</div>
-
-		
-	</div>
-
-
-	<div class="modal fade modal-lg" id="Mnuevodoc" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <h1 class="modal-title fs-5" id="exampleModalLabel">Nuevo documento</h1>
-	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-	      </div>
-	      <div class="modal-body">
-	      	<form id="formulariodocumento" method="POST" enctype="multipart/form-data">	    		
-
-	        	<div class="mb-3">
-	        		<label>Titulo</label>
-	        		<input type="text" class="form-control" name="titulodoc" id="titulodoc">        		       		
-	        	</div>
-
-	        	<div class="mb-3">
-	        		<label>Asunto</label>
-	        		<input type="text" class="form-control" name="Asunto" id="Asunto">        		       		
-	        	</div>
-	        	<div class="mb-3">
-	        		<label>Tipo documento</label>
-	        		<select id="Tdoc" name="Tdoc" class="form-select">
-	        		</select>        		    		
-	        	</div>
-	        	<div class="mb-3">
-	        		<label>Descripcion</label> 
-	        		<input type="text" class="form-control" name="descripcion" id="descripcion">       		       		
-	        	</div>
-	        	<div class="mb-3">
-	        		<label>Prioridad</label> 
-	        		<select id="prioridad" name="prioridad" class="form-select">
-
-	        		</select>          		       		
-	        	</div>        	
-	        	<div class="mb-3">
-	        		<label>Destino</label> 
-	        		<input type="text" class="form-control" id="destino">
-	        		<div id="iddivdestino" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div>        		         		       		
-	        	</div>
-	        	<div class="mb-3">
-	        		<table class="table" id="tableoficinas">
-	 				 <thead>
-	    				<tr>
-	    				 <th scope="col">codigo</th>
-	    				 <th scope="col">Oficina</th>
-	   				 	 <th scope="col"></th>      
-	    				</tr>
-	  				 </thead>
-	  				 <tbody>
-	  
-	 				 </tbody>
-					</table>       		         		       		
-	        	</div>
-	        	<div class="mb-3">
-	        		<label>Dni Emisor</label> 
-	        		<input type="text" class="form-control" id="Emisor" name="Emisor">
-	        		         		       		
-	        	</div>
-	        	<div class="mb-3">
-	        		<label>Datos Emisor</label> 
-	        		<input type="text" class="form-control" name="DEmisor" id="DEmisor">
-	        		         		       		
-	        	</div>        	
-	        	<div class="mb-3">
-	        		<label>Adjuntar</label> 
-	        		<input type="file" class="form-control" name="adjunto" id="adjunto"  accept=".pdf">
-	        		         		       		
-	        	</div>
-	        	</form> 
-	      </div>
-	      <div class="modal-footer">
-	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-	        <button type="button" class="btn btn-primary" id="grabardoc">Grabar</button>
-	      </div>
-	    </div>
-	  </div>
-	</div>
-
-<div class="modal fade" id="constancia" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Ticket</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <iframe id="verconstancia" src="" width="100%" height="600px" style="border:none;"></iframe>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
-      </div>
+<div class="contenedorinterno">
+    <div class="menubutton">
+        <a data-bs-target="#Mnuevodoc" data-bs-toggle="modal" href="#" id="cargarPlantilla">
+            <img height="90" src="{{url_for('static',filename='/img/newdoc.png')}}" width="90"/>
+            <h3>
+                Nuevo
+            </h3>
+        </a>
     </div>
-  </div>
+    <div class="menubutton">
+        <a href="{{url_for('documents.ingresoDocumento')}}">
+            <img height="90" src="{{url_for('static',filename='/img/bentrada.png')}}" width="90"/>
+            <h3>
+                B. Entrada
+            </h3>
+        </a>
+    </div>
+    <div class="menubutton">
+        <a href="{{url_for('documents.salidasdoc')}}">
+            <img height="90" src="{{url_for('static',filename='/img/bsalida.png')}}" width="90"/>
+            <h3>
+                B. Salida
+            </h3>
+        </a>
+    </div>
+    <div class="menubutton">
+        <a href="{{url_for('documents.docObservados')}}">
+            <img height="90" src="{{url_for('static',filename='/img/observado.png')}}" width="90"/>
+            <h3>
+                Obsevados
+            </h3>
+        </a>
+    </div>
+    <div class="menubutton">
+        <a href="{{url_for('documents.HistorialDocumentos')}}">
+            <img height="90" src="{{url_for('static',filename='/img/historial.png')}}" width="90"/>
+            <h3>
+                Historial
+            </h3>
+        </a>
+    </div>
+    <div class="menubutton">
+        <a href="{{url_for('documents.segDocumento')}}">
+            <img height="90" src="{{url_for('static',filename='/img/seguimiento.png')}}" width="90"/>
+            <h3>
+                Seguimiento
+            </h3>
+        </a>
+    </div>
+    <div class="menubutton">
+        <a href="{{url_for('documents.segDocumento')}}">
+            <img height="90" src="{{url_for('static',filename='/img/others.png')}}" width="90"/>
+            <h3>
+                Otros
+            </h3>
+        </a>
+    </div>
 </div>
-
-
-	{%endblock%}
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade modal-lg" id="Mnuevodoc" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Nuevo documento
+                </h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="formulariodocumento" method="POST">
+                    <div class="mb-3">
+                        <label>
+                            Titulo
+                        </label>
+                        <input class="form-control" id="titulodoc" name="titulodoc" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Asunto
+                        </label>
+                        <input class="form-control" id="Asunto" name="Asunto" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Tipo documento
+                        </label>
+                        <select class="form-select" id="Tdoc" name="Tdoc">
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Descripcion
+                        </label>
+                        <input class="form-control" id="descripcion" name="descripcion" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Prioridad
+                        </label>
+                        <select class="form-select" id="prioridad" name="prioridad">
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Destino
+                        </label>
+                        <input class="form-control" id="destino" type="text"/>
+                        <div id="iddivdestino" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <table class="table" id="tableoficinas">
+                            <thead>
+                                <tr>
+                                    <th scope="col">
+                                        codigo
+                                    </th>
+                                    <th scope="col">
+                                        Oficina
+                                    </th>
+                                    <th scope="col">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Dni Emisor
+                        </label>
+                        <input class="form-control" id="Emisor" name="Emisor" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Datos Emisor
+                        </label>
+                        <input class="form-control" id="DEmisor" name="DEmisor" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label>
+                            Adjuntar
+                        </label>
+                        <input accept=".pdf" class="form-control" id="adjunto" name="adjunto" type="file"/>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+                <button class="btn btn-primary btnblockdubleclick" id="grabardoc" type="button">
+                    Grabar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="constancia" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Ticket
+                </h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe height="600px" id="verconstancia" src="" style="border:none;" width="100%">
+                </iframe>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

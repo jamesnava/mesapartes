@@ -31,12 +31,15 @@
         </div>
         <div class="info" style="font-style: italic;">
             {%block info%}
-            <h5>
-                usuario:
-            </h5>
-            <h5>
+            <h6>
+                Usuario:
+            </h6>
+            <span>
                 {{usuario}}
-            </h5>
+            </span>
+            <a href="#" style="margin-left:10px;text-decoration: underline !important;color: #73231A !important;">
+                Cambiar clave
+            </a>
             {%endblock%}
         </div>
         <main style="margin-left: 3%;">
@@ -59,6 +62,15 @@
         </div>
         <nav class="main-menu">
             <ul>
+                <li>
+                    <a href="{{url_for('main.principal')}} ">
+                        <i class="fa fa-home fa-2x">
+                        </i>
+                        <span class="nav-text">
+                            Inicio
+                        </span>
+                    </a>
+                </li>
                 {%if 'DOCUMENTO' in permisos%}
                 <li>
                     <a href="{{url_for('main.documentos')}} ">
@@ -96,7 +108,7 @@
                 {%if 'ROL' in permisos or 'PERMISO' in permiso%}
                 <li>
                     <a href="{{url_for('main.rolesPermisos')}}">
-                        <i class="fa fa-film fa-2x">
+                        <i class="fa fa-key fa-2x">
                         </i>
                         <span class="nav-text">
                             Roles y permisos
