@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template,redirect,url_for,request,g
+from flask import Blueprint, render_template,redirect,url_for,request,g,jsonify
 from flask_login import current_user,login_required
 from app.modelos.QueryLogin import QueryL
 from app.modelos.QueryDocumento import QueryDocumentos
 from app.decoratos import requires_permission
 from app.constanst import Permiso
+from werkzeug.security import check_password_hash, generate_password_hash
 
 main_bp=Blueprint('main',__name__,url_prefix='/main')
 
@@ -49,4 +50,24 @@ def oficinaplantilla():
 def userperson():
 	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
 	return render_template('/personas/peruserprincipal.html',info=datos)
+
+@main_bp.route('/changepassword',methods=['POST'])
+@login_required
+def ChangePassword():
+	claveactual=request.form.get('claveactual')
+	clave=request.form.get('clave')
+	objConsulta=QueryDocumentos()
+	numero=0	
+	if (check_password_hash(current_user.password,claveactual)):
+		sql="UPDATE USUARIO SET Contrasena=? WHERE Id_Usuario=?"
+		params=(generate_password_hash(clave),current_user.id)
+		try:
+			numero=objConsulta.InsertDataGeneral(sql,params)
+		except Exception as e:
+			numero=0
+		
+	else:
+		numero=-1
+
+	return jsonify(numero)
 

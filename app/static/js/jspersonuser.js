@@ -429,5 +429,50 @@ $('#grabarupdateperfiluser').on('click',function(){
 
 });
 
+$('#linkchangeclave').on('click',function(){
+	$('#Mcambioclave').modal('show');
+});
+
+$('#confirmarclave').on('keyup',function(){
+	const pass=$('#clave').val();
+	const confirmar=$(this).val();	
+	const mensaje=$('#mensaje-error');
+
+	if(pass!==confirmar){mensaje.text('La contraseña no coinciden');}
+	else{
+		mensaje.text("");}
+});
+
+$('#grabarcambioclave').on('click',function(){
+	const claveactual=$('#claveactual').val();
+	const clave=$('#clave').val();
+	const claveconfirmar=$('#confirmarclave').val();
+	if (clave==claveconfirmar){
+		$.ajax({
+		type:'POST',
+		url:'/main/changepassword',
+		data:{'clave':clave,'claveactual':claveactual},
+		success:function(response){
+			if (response==1){
+				mostrarMensaje('success','Se actualizó correctamente!');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+			else if(response==-1){
+				mostrarMensaje('error','La clave actual no corresponde, intente nuevamente');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+			else if (response==0){
+				mostrarMensaje('error','Ocurrio un problema al actualizar!!');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+		}
+	});
+	}
+	else{
+		mostrarMensaje('error','La nueva clave no coincide!!');
+		setTimeout(function(){location.reload(true);},1000);
+	}
+	
+});
 
 });

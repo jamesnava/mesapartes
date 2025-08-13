@@ -1,5 +1,5 @@
 {% extends "/start/main.html"%}
-	{%block info%}
+    {%block info%}
 <input id="usuario_id" type="hidden" value="{{datos.dni}}"/>
 <input id="oficina" type="hidden" value="{{datos.oficina}}"/>
 <h6>
@@ -10,8 +10,9 @@
 </span>
 {%endblock%}
 
-	{%block content%}
+    {%block content%}
 <div class="contenedorinterno">
+    {%if 'DOC_NUEVO' in permisos%}
     <div class="menubutton">
         <a data-bs-target="#Mnuevodoc" data-bs-toggle="modal" href="#" id="cargarPlantilla">
             <img height="90" src="{{url_for('static',filename='/img/newdoc.png')}}" width="90"/>
@@ -20,6 +21,8 @@
             </h3>
         </a>
     </div>
+    {%endif%}
+    {%if 'DOC_BENTRADA' in permisos%}
     <div class="menubutton">
         <a href="{{url_for('documents.ingresoDocumento')}}">
             <img height="90" src="{{url_for('static',filename='/img/bentrada.png')}}" width="90"/>
@@ -28,6 +31,8 @@
             </h3>
         </a>
     </div>
+    {%endif%}
+    {%if 'DOC_BSALIDA' in permisos%}
     <div class="menubutton">
         <a href="{{url_for('documents.salidasdoc')}}">
             <img height="90" src="{{url_for('static',filename='/img/bsalida.png')}}" width="90"/>
@@ -36,6 +41,8 @@
             </h3>
         </a>
     </div>
+    {%endif%}
+    {%if 'DOC_OBSERVADOS' in permisos%}
     <div class="menubutton">
         <a href="{{url_for('documents.docObservados')}}">
             <img height="90" src="{{url_for('static',filename='/img/observado.png')}}" width="90"/>
@@ -44,6 +51,8 @@
             </h3>
         </a>
     </div>
+    {%endif%}
+    {%if 'DOC_HISTORIAL' in permisos%}
     <div class="menubutton">
         <a href="{{url_for('documents.HistorialDocumentos')}}">
             <img height="90" src="{{url_for('static',filename='/img/historial.png')}}" width="90"/>
@@ -52,6 +61,8 @@
             </h3>
         </a>
     </div>
+    {%endif%}
+    {%if 'DOC_SEGUIMIENTO' in permisos%}
     <div class="menubutton">
         <a href="{{url_for('documents.segDocumento')}}">
             <img height="90" src="{{url_for('static',filename='/img/seguimiento.png')}}" width="90"/>
@@ -60,14 +71,17 @@
             </h3>
         </a>
     </div>
+    {%endif%}
+    {%if 'DOC_OTHERS' in permisos%}
     <div class="menubutton">
-        <a href="{{url_for('documents.segDocumento')}}">
+        <a href="{{url_for('documents.OtherDocuments')}}">
             <img height="90" src="{{url_for('static',filename='/img/others.png')}}" width="90"/>
             <h3>
                 Otros
             </h3>
         </a>
     </div>
+    {%endif%}
 </div>
 <div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade modal-lg" id="Mnuevodoc" tabindex="-1">
     <div class="modal-dialog">

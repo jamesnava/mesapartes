@@ -1,15 +1,19 @@
-from flask import Blueprint, render_template, redirect, url_for, request,jsonify
+from flask import Blueprint, render_template, redirect,session, url_for, request,jsonify
 from app.formularios.Documentos.formDocumentos import Documentos
 from app.modelos.QueryDocumento import QueryDocumentos
 from flask_login import current_user,login_required
 from app.utilidades import utilidades
 import os
+import time
 import uuid
 import locale
 from datetime import datetime
+from app.decoratos import requires_permission
+from app.constanst import Permiso
 
 
 documento_bp=Blueprint('documents',__name__,url_prefix='/documents')
+from app.decoratos import requires_permission
 
 
 @documento_bp.route('/nuevodoc',methods=['POST'])
@@ -74,7 +78,10 @@ def filldata():
 
 	return jsonify({'datos':datos})
 
+
 @documento_bp.route('/insertdocument',methods=['POST'])
+@requires_permission(Permiso.DOC_NUEVO)
+@login_required
 def insertDoc():
 	nro_movimiento=0
 	objConsulta=QueryDocumentos()
@@ -138,6 +145,8 @@ def insertDoc():
 	return[nro_movimiento]
 
 @documento_bp.route('/docin')
+@requires_permission(Permiso.DOC_BENTRADA)
+@login_required
 def ingresoDocumento():	
 	params=(current_user.id_oficina,)
 	rows=consultaDocumentosEntrada(params)
@@ -175,6 +184,8 @@ def followS():
 	return jsonify({'datos':datos})
 
 @documento_bp.route('/recepcionardoc',methods=['POST'])
+@requires_permission(Permiso.DOC_BENTRADA)
+@login_required
 def RecepcionDocumento():
 	objConsulta=QueryDocumentos()
 	idmovimiento=request.form.get('idDoc')
@@ -208,6 +219,8 @@ def RecepcionDocumento():
 	return jsonify(manejador)
 
 @documento_bp.route('/acciones',methods=['POST'])
+@requires_permission(Permiso.DOC_BENTRADA)
+@login_required
 def accionesgenerales():
 	objConsulta=QueryDocumentos()	
 	
@@ -221,6 +234,8 @@ def accionesgenerales():
 	return datos_retornar
 
 @documento_bp.route('/confirmaraccion',methods=['POST'])
+@requires_permission(Permiso.DOC_BENTRADA)
+@login_required
 def actualizacionaccion():
 	objConsulta=QueryDocumentos()
 	accion=request.form.get('accion')
@@ -246,31 +261,40 @@ def actualizacionaccion():
 
 	if selected!=None:
 		if int(accion)==3:
+			#verificamos
+			sql=sql_check = """ SELECT TOP 1 Id_Movimiento FROM MOVIMIENTO WHERE Id_Documento = ? AND Id_Usuario = ? AND Id_Accion = ? AND Id_Oficina_Origen = ?
+     		AND Id_Oficina_Destino = ? AND Tipo_Flujo = ?  AND Fecha_Movimiento >= DATEADD(SECOND, -3, GETDATE())"""
+
+			params_check = (rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],current_user.id_oficina,codigoOficina,'Egreso')
+			existe = objConsulta.ConsultaMainDocParams(sql_check, params_check)	
+			if existe:
+				return jsonify(0)
 			numeracion=0
-			numeracion=getnumeracion(current_user.id_oficina,'Egreso')
-			for val in rows_Anterior:			
-				params=(val.Id_Documento,val.Id_Usuario,pares[selected][0],comentario,current_user.id_oficina,codigoOficina,0,numeracion,'Egreso')
+			numeracion=getnumeracion(current_user.id_oficina,'Egreso')	
+
+						
+			params=(rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,codigoOficina,0,numeracion,'Egreso')
+
 		elif int(accion)==4:
 			for val in rows_Anterior:
-				params=(val.Id_Documento,val.Id_Usuario,pares[selected][0],comentario,current_user.id_oficina,val.Id_Oficina_Origen,0,0,'Interno')
-		elif int(accion) in (7,8,12):
-			for val in rows_Anterior:
-				params=(val.Id_Documento,val.Id_Usuario,pares[selected][0],comentario,current_user.id_oficina,None,0,0,'Interno')
+				params=(val.Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,val.Id_Oficina_Origen,0,0,'Interno')
+		elif int(accion) in (7,8,12):			
+			params=(rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,None,0,0,'Interno')
 
 	
 	idmovimiento=objConsulta.InsertDataIdentity(sql_insertar,params)
-
 	indicador=0
 	if idmovimiento:
 		sql_documento="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"
 		parametros=(pares[selected][1],rows_Anterior[0].Id_Documento)
 		indicador=objConsulta.InsertDataGeneral(sql_documento,parametros)
 
-
-	return [indicador]
+	return jsonify(indicador)
 
 
 @documento_bp.route('/outdoc')
+@requires_permission(Permiso.DOC_BSALIDA)
+@login_required
 def salidasdoc():
 	objConsulta=QueryDocumentos()
 	sql="""WITH UltimosMovimientos AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila FROM MOVIMIENTO 
@@ -281,13 +305,15 @@ def salidasdoc():
     TP.Nombre_Prioridad,A.url_archivo,D.Titulo,M.Id_Movimiento,ED.Nombre_estado FROM UltimosMovimientos M INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento
 	INNER JOIN PERSONA P ON D.Emisor = P.Dni INNER JOIN Tipos_Prioridad TP ON D.Prioridad = TP.Id_TiposPrioridad
 	INNER JOIN Tipo_Documento TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento INNER JOIN Oficina O ON M.Id_Oficina_Destino = O.Id_Oficina
-	INNER JOIN Adjunto A ON D.Id_Adjunto = A.Id_Adjunto INNER JOIN Estado_Doc AS ED ON D.Estado=ED.Id_EstadoDoc WHERE M.fila = 1 AND M.Id_Accion = ?"""
+	INNER JOIN Adjunto A ON D.Id_Adjunto = A.Id_Adjunto INNER JOIN Estado_Doc AS ED ON D.Estado=ED.Id_EstadoDoc WHERE M.fila = 1 AND D.Estado = ?"""
 	rows_resultados=objConsulta.ConsultaMainDocParams(sql,(current_user.id_oficina,3))
 
 
 	return render_template('/documentos/doc_salida.html',datos=rows_resultados)
 
 @documento_bp.route('/revertirdoc',methods=['POST'])
+@requires_permission(Permiso.DOC_BSALIDA)
+@login_required
 def revertirdoc():
 	objConsulta=QueryDocumentos()
 	idmovimiento=request.form.get('idmovimiento')
@@ -301,7 +327,7 @@ def revertirdoc():
 	if numero_actualizacion:
 		sql_Eliminar="DELETE FROM MOVIMIENTO WHERE Id_Movimiento=?"
 		nro_Eliminacion=objConsulta.InsertDataGeneral(sql_Eliminar,(idmovimiento,))
-	return [nro_Eliminacion]
+	return jsonify(nro_Eliminacion)
 
 @documento_bp.route('/docobservados')
 def docObservados():
@@ -469,9 +495,90 @@ def SearchObservados():
 		datos=[{'titulo':val.Titulo,'asunto':val.Asunto,'fecha':val.Fecha_Movimiento,'observacion':val.comentarios,'idmov':val.Id_Movimiento} for val in rows]
 	except Exception as e:
 		print(e)
+	return jsonify({'datos':datos})
 
+@documento_bp.route('/otherdocumentos')
+@login_required
+def OtherDocuments():
+	return render_template('/documentos/doc_others.html',info={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina})
+
+@documento_bp.route('/filtertypedocument',methods=['POST'])
+@login_required
+def FilterTypeDocument():
+	seleccion=request.form.get('seleccion')
+	datos=[]
+	objConsulta=QueryDocumentos()
+	if seleccion=='ANULADO':
+		sql="""WITH ULTIMOSMOVIMIENTOS AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS Fila FROM MOVIMIENTO)
+		SELECT TOP 50 FORMAT(UM.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,CONCAT(P.Nombre,' ',P.ApellidoPaterno,' ',P.ApellidoMaterno) AS NEmisor,
+		D.Asunto,D.Titulo,UM.Id_Movimiento,D.CodigoSeguimiento,UM.comentarios,U.Nombre_Usuario
+		FROM ULTIMOSMOVIMIENTOS AS UM INNER JOIN DOCUMENTO AS D ON UM.Id_Documento=D.Id_Documento INNER JOIN PERSONA AS P 
+		ON D.Emisor=P.Dni INNER JOIN USUARIO AS U ON UM.Id_Usuario=U.Id_Usuario WHERE 
+		UM.Fila=? AND D.Estado=? AND UM.Id_Oficina_Origen=? ORDER BY UM.Fecha_Movimiento DESC"""
+		params=(1,7,current_user.id_oficina)
+
+		try:
+			rows=objConsulta.ConsultaMainDocParams(sql,params)
+			datos=[{'titulo':val.Titulo,'fecha':val.FechaFormateada,'usuario':val.Nombre_Usuario,'codigo':val.CodigoSeguimiento,'detalles':val.comentarios} for val in rows]
+		except Exception as e:
+			print(e)
+
+	elif seleccion=='ARCHIVADO':
+		sql="""WITH ULTIMOSMOVIMIENTOS AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS Fila FROM MOVIMIENTO)
+		SELECT TOP 50 FORMAT(UM.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,CONCAT(P.Nombre,' ',P.ApellidoPaterno,' ',P.ApellidoMaterno) AS NEmisor,
+		D.Asunto,D.Titulo,UM.Id_Movimiento,D.CodigoSeguimiento,UM.comentarios,U.Nombre_Usuario
+		FROM ULTIMOSMOVIMIENTOS AS UM INNER JOIN DOCUMENTO AS D ON UM.Id_Documento=D.Id_Documento INNER JOIN PERSONA AS P 
+		ON D.Emisor=P.Dni INNER JOIN USUARIO AS U ON UM.Id_Usuario=U.Id_Usuario WHERE 
+		UM.Fila=? AND D.Estado=? AND UM.Id_Oficina_Origen=? ORDER BY UM.Fecha_Movimiento DESC"""
+		params=(1,6,current_user.id_oficina)
+		try:
+			rows=objConsulta.ConsultaMainDocParams(sql,params)
+			datos=[{'titulo':val.Titulo,'fecha':val.FechaFormateada,'usuario':val.Nombre_Usuario,'codigo':val.CodigoSeguimiento,'detalles':val.comentarios} for val in rows]
+		except Exception as e:
+			print(e)	
 
 	return jsonify({'datos':datos})
+
+@documento_bp.route('/searchotherdocuments',methods=['POST'])
+@login_required
+def searchftdocument():
+	valor=request.form.get('valor')
+	tipo=request.form.get('tipo')
+	datos=[]
+	objConsulta=QueryDocumentos()
+	if tipo=='ANULADO':
+		sql="""WITH ULTIMOSMOVIMIENTOS AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS Fila FROM MOVIMIENTO)
+		SELECT TOP 50 FORMAT(UM.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,CONCAT(P.Nombre,' ',P.ApellidoPaterno,' ',P.ApellidoMaterno) AS NEmisor,
+		D.Asunto,D.Titulo,UM.Id_Movimiento,D.CodigoSeguimiento,UM.comentarios,U.Nombre_Usuario
+		FROM ULTIMOSMOVIMIENTOS AS UM INNER JOIN DOCUMENTO AS D ON UM.Id_Documento=D.Id_Documento INNER JOIN PERSONA AS P 
+		ON D.Emisor=P.Dni INNER JOIN USUARIO AS U ON UM.Id_Usuario=U.Id_Usuario WHERE 
+		UM.Fila=? AND D.Estado=? AND UM.Id_Oficina_Origen=? AND D.Titulo LIKE ?"""
+		params=(1,7,current_user.id_oficina,'%'+valor+'%')
+
+		try:
+			rows=objConsulta.ConsultaMainDocParams(sql,params)
+			datos=[{'titulo':val.Titulo,'fecha':val.FechaFormateada,'usuario':val.Nombre_Usuario,'codigo':val.CodigoSeguimiento,'detalles':val.comentarios} for val in rows]
+		except Exception as e:
+			print(e)
+
+	elif tipo=='ARCHIVADO':
+		sql="""WITH ULTIMOSMOVIMIENTOS AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS Fila FROM MOVIMIENTO)
+		SELECT TOP 50 FORMAT(UM.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,CONCAT(P.Nombre,' ',P.ApellidoPaterno,' ',P.ApellidoMaterno) AS NEmisor,
+		D.Asunto,D.Titulo,UM.Id_Movimiento,D.CodigoSeguimiento,UM.comentarios,U.Nombre_Usuario
+		FROM ULTIMOSMOVIMIENTOS AS UM INNER JOIN DOCUMENTO AS D ON UM.Id_Documento=D.Id_Documento INNER JOIN PERSONA AS P 
+		ON D.Emisor=P.Dni INNER JOIN USUARIO AS U ON UM.Id_Usuario=U.Id_Usuario WHERE 
+		UM.Fila=? AND D.Estado=? AND UM.Id_Oficina_Origen=? AND D.Titulo LIKE ?"""
+		params=(1,6,current_user.id_oficina,'%'+valor+'%')
+		try:
+			rows=objConsulta.ConsultaMainDocParams(sql,params)
+			datos=[{'titulo':val.Titulo,'fecha':val.FechaFormateada,'usuario':val.Nombre_Usuario,'codigo':val.CodigoSeguimiento,'detalles':val.comentarios} for val in rows]
+		except Exception as e:
+			print(e)	
+
+	return jsonify({'datos':datos})
+
+
+
 
 def getnumeracion(oficina,tipoflujo):
 	objConsulta=QueryDocumentos()	

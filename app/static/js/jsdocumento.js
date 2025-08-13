@@ -232,8 +232,7 @@ $('#grabardoc').on('click',function(){
 
 $('.ver-pdf').on('click',function(){
 	const url=$(this).data('url');
-	$('#visorPDF').attr('src', "/static/uploads/"+url);
-	//$('#visorPDF').attr('src', "/static/ticket/doc.pdf");
+	$('#visorPDF').attr('src', "/static/uploads/"+url);	
   $('#verpdf').modal('show');
 });
 
@@ -244,6 +243,7 @@ $('.acciones').on('click',function(){
 		type:'POST',
 		
 		success:function(response){
+			$('#tipoAccion').empty();
 			$.each(response.acciones,function(index,acciones){
 				$('#tipoAccion').append(`<option value=${acciones.Id_Accion}>${acciones.Nombre_Accion}</option>`);
 			});
@@ -275,18 +275,18 @@ $('.recepcionardoc').on('click',function(){
 		type:'POST',
 		data:{'idDoc':id,'oficina':oficina,'idusuario':idusuario},
 		success:function(response){
-			if (response!=0){
+			
+			if (response==1){
 				mostrarMensaje('success','Recepcionado');
 				setTimeout(function(){location.reload(true);},1000);			
 				
 			}
-			else if(response==-1){
-				mostrarMensaje('error','Se detecto envio doble, el primer registro se ingreso descartando el segundo');
-				setTimeout(function(){location.reload(true)},1000)
-			}
 			else{
-				mostrarMensaje('error','Error!!');
+				mostrarMensaje('error','Ocurrió un error');
 			}
+		},
+		error: function(xhr,status,error){
+			console.log(xhr.status);
 		}
 	});
 
@@ -363,8 +363,13 @@ $('.salidadoc').on('click',function(){
       		type:'POST',
       		data:{'idmovimiento':idmovimiento},
       		success:function(response){
-      			if (response!=0){
-      				mostrarMensaje('success','Se revertio, correctamente');
+      			console.log(response);
+      			if (response==1){
+      				mostrarMensaje('success','Se revertió, correctamente');
+      				setTimeout(function(){location.reload(true);},1000);
+      			}
+      			else{
+      				mostrarMensaje('error','ocurrió un error!')
       				setTimeout(function(){location.reload(true);},1000);
       			}
       			
@@ -500,7 +505,7 @@ $.ajax({
 						<button class="btn btn-primary ver-pdf" data-url="${valores.url}" type="button">
               <i class="fas fa-file-pdf" title="Ver documento"></i>
             </button>
-            <button class="btn btn-success btnblockdubleclick recepcionardoc" data-idmovimiento="${valores.idmovimiento}" type="button">
+            <button class="btn btn-success recepcionardocd" data-idmovimiento="${valores.idmovimiento}" type="button">
               <i class="fas fa-check-circle" title="Recepcionar documento"></i>
             </button>
             <button class="btn btn-danger comentarios" data-idmovimiento="${valores.idmovimiento}" type="button">
@@ -565,6 +570,7 @@ $.ajax({
 
 });
 
+
 $('#tablaBandejapendienterecepcion, #tablaBandejarecepcionados').on('click','.ver-pdf',function(){
 	const url=$(this).data('url');
 	$('#visorPDF').attr('src', "/static/uploads/"+url);	
@@ -572,7 +578,7 @@ $('#tablaBandejapendienterecepcion, #tablaBandejarecepcionados').on('click','.ve
 });
 
 
-$('#tablaBandejapendienterecepcion').on('click','.recepcionardoc',function(){
+$('#tablaBandejapendienterecepcion').on('click','.recepcionardocd',function(){
 	const id=$(this).data('idmovimiento');
 	const oficina=$('#oficina').val();
 	const idusuario=$('#usuario_id').val();
@@ -581,9 +587,10 @@ $('#tablaBandejapendienterecepcion').on('click','.recepcionardoc',function(){
 		type:'POST',
 		data:{'idDoc':id,'oficina':oficina,'idusuario':idusuario},
 		success:function(response){
-			if (response!=0){				
+			
+			if (response==1){				
 				mostrarMensaje('success','Recepcionado');
-				setTimeout(function(){location.reload(true);},1000)
+				setTimeout(function(){location.reload(true);},1000);
 			}
 			else{
 				mostrarMensaje('error','Error!!');
@@ -616,6 +623,7 @@ $('#tablaBandejarecepcionados').on('click','.acciones',function(){
 		type:'POST',
 		
 		success:function(response){
+			$('#tipoAccion').empty();
 			$.each(response.acciones,function(index,acciones){
 				$('#tipoAccion').append(`<option value=${acciones.Id_Accion}>${acciones.Nombre_Accion}</option>`);
 			});
@@ -709,6 +717,52 @@ $('#txtbuscarhistorial').on('keyup',function(){
 	else{
 		mostrarMensaje('error','Seleccion el tipo de registro!');
 	}
+
+});
+$('input[name="Dfilter"]').on('change',function(){
+	const seleccion=$(this).val();
+	$.ajax({
+		type:'POST',
+		url:'/documents/filtertypedocument',
+		data:{'seleccion':seleccion},
+		success:function(response){
+			tablehtml=$('#tablehistoricoD');
+			tablehtml.empty();
+			$.each(response.datos,function(index,valores){
+				tablehtml.append(`<tr>
+					<td>${valores.titulo}</td>
+					<td>${valores.fecha}</td>
+					<td>${valores.usuario}</td>
+					<td>${valores.codigo}</td>
+					<td>${valores.detalles}</td>				
+					</tr>`);
+			});
+
+		}
+	});
+});
+
+$('#txtbuscardocumento').on('keyup',function(){
+const valor=$(this).val();
+const tipo=$('input[name="Dfilter"]:checked').val();
+$.ajax({
+	type:'POST',
+	url:'/documents/searchotherdocuments',
+	data:{'valor':valor,'tipo':tipo},
+	success:function(response){
+		tablehtml=$('#tablehistoricoD');
+		tablehtml.empty();
+		$.each(response.datos,function(index,valores){
+				tablehtml.append(`<tr>
+					<td>${valores.titulo}</td>
+					<td>${valores.fecha}</td>
+					<td>${valores.usuario}</td>
+					<td>${valores.codigo}</td>
+					<td>${valores.detalles}</td>				
+					</tr>`);
+			});
+	}
+});
 
 });
 

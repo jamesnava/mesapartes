@@ -22,3 +22,4 @@ function mostrarMensaje(tipo, texto, tiempo = 2500) {
     $mensaje.fadeOut();
   }, tiempo);
 }
+
