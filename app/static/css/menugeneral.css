@@ -417,6 +417,18 @@ ul.flashes li.success {
     border-radius: 3px;
 }
 
+.tituloletra{
+  font-family: 'Georgia', serif;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+
+
+}
+
 /*colores de fila de prioridades*/
 .prioridad-inmediata  { color: #ff4d4d; }
 .prioridad-alta       { color: #ff944d; }

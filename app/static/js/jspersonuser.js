@@ -309,8 +309,7 @@ $(document).ready(function(){
 
 
 $('.btnchangeoficina').on('click',function(){
-	$('#modalchangeoficina').modal('show');
-	//let identificador=	
+	$('#modalchangeoficina').modal('show');		
 	$('#ofhidden').val($(this).data('dni'));
 });
 

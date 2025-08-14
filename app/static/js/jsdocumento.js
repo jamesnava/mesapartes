@@ -210,10 +210,12 @@ $('#grabardoc').on('click',function(){
 		contentType:false,
 		processData:false,
 		success: function(response){
-			if (response!=0){
+
+			if (response.movimiento!=0){
 				mostrarMensaje('success','Exitoso!');
+				
 				//mostrar div de impresion
-				$('#verconstancia').attr('src', "/static/ticket/doc.pdf");
+				$('#verconstancia').attr('src',response.direccion);
 				$('#constancia').modal('show');
 				$('#constancia').on('hidden.bs.modal', function () {
   					location.reload(true);

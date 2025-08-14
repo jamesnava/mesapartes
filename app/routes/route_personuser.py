@@ -2,10 +2,14 @@ from flask import Blueprint, render_template, redirect,request,jsonify,request
 from flask_login import current_user,login_required
 from app.modelos.QueryDocumento import QueryDocumentos
 from werkzeug.security import generate_password_hash
+from app.decoratos import requires_permission
+from app.constanst import Permiso
 
 puser_bp=Blueprint('puser',__name__,url_prefix='/puser')
 
 @puser_bp.route('/tuser')
+@requires_permission(Permiso.USUARIO)
+@login_required
 def templateUser():
 	objConsulta=QueryDocumentos()
 	sql="""SELECT P.Nombre,P.ApellidoPaterno,P.ApellidoMaterno,P.Dni,U.Nombre_Usuario,U.Id_Usuario,U.Estado,O.nombre_oficina
@@ -15,6 +19,8 @@ def templateUser():
 	return render_template('/personas/usuario.html',info=datos,rows=rows)
 
 @puser_bp.route('/tperson')
+@requires_permission(Permiso.PERSONA)
+@login_required
 def templatePerson():
 	objConsulta=QueryDocumentos()
 	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
@@ -24,6 +30,8 @@ def templatePerson():
 	return render_template('/personas/persona.html',info=datos,rows=rows)
 
 @puser_bp.route('/insertperson',methods=['POST'])
+@requires_permission('Permiso.PERSONA')
+@login_required
 def insertperson():
 	objConsulta=QueryDocumentos()
 	dni=request.form.get('dnip')
@@ -48,6 +56,8 @@ def insertperson():
 	return [controlador]
 
 @puser_bp.route('/updateperson',methods=['POST'])
+@requires_permission(Permiso.PERSONA)
+@login_required
 def actualizarpersona():
 	objConsulta=QueryDocumentos()
 	dni=request.form.get('dni')
@@ -59,6 +69,8 @@ def actualizarpersona():
 	return jsonify({'datos':datos})
 
 @puser_bp.route('/saveupdate',methods=['POST'])
+@requires_permission(Permiso.PERSONA)
+@login_required
 def saveupdatepersona():
 	objConsulta=QueryDocumentos()	
 	nombre=request.form.get('nombrepe')
@@ -75,6 +87,8 @@ def saveupdatepersona():
 	return [numero]
 
 @puser_bp.route('/deleteperson',methods=['POST'])
+@requires_permission(Permiso.PERSONA)
+@login_required
 def deleteperson():
 	numero=0
 	try:
@@ -87,6 +101,8 @@ def deleteperson():
 	return [numero]
 
 @puser_bp.route('/searchperson',methods=['POST'])
+@requires_permission(Permiso.PERSONA)
+@login_required
 def searchperson():
 	objConsulta=QueryDocumentos()
 	valor=request.form.get('datos')
@@ -103,6 +119,7 @@ def searchperson():
 	return jsonify({'datos':datos})
 
 @puser_bp.route('/searchpersonwithoutuser',methods=['POST'])
+@login_required
 def searchpersonwithoutuser():
 	objConsulta=QueryDocumentos()
 	datos=request.form.get('datos')
@@ -119,6 +136,7 @@ def searchpersonwithoutuser():
 	return jsonify({'datos':datos})
 
 @puser_bp.route('/searchoficinauser',methods=['POST'])
+@login_required
 def searchoficinauser():
 	objConsulta=QueryDocumentos()
 	parametro=request.form.get('datos')
@@ -135,6 +153,7 @@ def searchoficinauser():
 	return jsonify({'datos':datos})
 
 @puser_bp.route('/loadroluser',methods=['POST'])
+@login_required
 def loadRolUser():
 	objConsulta=QueryDocumentos()
 	sql="SELECT * FROM Roles"
@@ -174,6 +193,8 @@ def saveUser():
 	return [controlador]
 
 @puser_bp.route('/changestate',methods=['POST'])
+@requires_permission(Permiso.USUARIO)
+@login_required
 def changeState():
 	dni=request.form.get('dni')
 	sql="UPDATE USUARIO SET Estado=? WHERE Dni=?"
@@ -191,6 +212,8 @@ def changeState():
 	return [controlador]
 
 @puser_bp.route('/updateoficinauser',methods=['POST'])
+@requires_permission(Permiso.USUARIO)
+@login_required
 def updateOficinaUser():
 	dni=request.form.get('dni')
 	codigo=request.form.get('oficina')
@@ -205,6 +228,8 @@ def updateOficinaUser():
 	return [controlador]
 
 @puser_bp.route('/updatepassworduser',methods=['POST'])
+@requires_permission(Permiso.USUARIO)
+@login_required
 def updatePasswordUser():
 	dni=request.form.get('dni')
 	clave=generate_password_hash(request.form.get('clave'))
@@ -219,6 +244,7 @@ def updatePasswordUser():
 	return [controlador]
 
 @puser_bp.route('/cargarperfil',methods=['POST'])
+@login_required
 def cargarperfil():
 	sql="SELECT * FROM Roles"
 	objConsulta=QueryDocumentos()
@@ -232,6 +258,7 @@ def cargarperfil():
 	return jsonify({'datos':datos})
 
 @puser_bp.route('/grabacambioperfil',methods=['POST'])
+@login_required
 def changeProfile():
 	numero=0
 	dni=request.form.get('dni')
@@ -244,13 +271,6 @@ def changeProfile():
 		numero=0
 	return jsonify(numero)
 
-
-
-
-
-
-
-	
 
 
 

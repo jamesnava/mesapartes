@@ -12,7 +12,7 @@
 {%block content%}
 <div>
     <div class="titulomodulo">
-        <h4 class="titulo-centro">
+        <h4 class="titulo-centro tituloletra">
             Documentos Pendientes a recepcion
         </h4>
         <input class="input-derecha" id="btndocpendientes" placeholder="Buscar..." type="text"/>
@@ -92,7 +92,7 @@
         </table>
     </div>
     <div class="titulomodulo">
-        <h4 class="titulo-centro">
+        <h4 class="titulo-centro tituloletra">
             Documentos recepcionados
         </h4>
         <input class="input-derecha" id="btndocrecepcionados" placeholder="Buscar..." type="text"/>
@@ -177,6 +177,12 @@
                 {%endfor%}
             </tbody>
         </table>
+    </div>
+    <div class="titulomodulo">
+        <button class="btn btn-success">
+            <i aria-hidden="true" class="fas fa-arrow-right" title="Documentos Generados">
+            </i>
+        </button>
     </div>
 </div>
 <!--previsualizar archivo adjunto-->

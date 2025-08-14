@@ -1,19 +1,23 @@
-from flask import Blueprint, render_template, redirect,session, url_for, request,jsonify
+from flask import Blueprint, render_template, redirect,session, url_for, request,jsonify,send_file,current_app,after_this_request
 from app.formularios.Documentos.formDocumentos import Documentos
 from app.modelos.QueryDocumento import QueryDocumentos
 from flask_login import current_user,login_required
 from app.utilidades import utilidades
 import os
+import tempfile
+import shutil
 import time
 import uuid
 import locale
+import threading
+import time
 from datetime import datetime
 from app.decoratos import requires_permission
 from app.constanst import Permiso
 
 
 documento_bp=Blueprint('documents',__name__,url_prefix='/documents')
-from app.decoratos import requires_permission
+#from app.decoratos import requires_permission
 
 
 @documento_bp.route('/nuevodoc',methods=['POST'])
@@ -46,7 +50,6 @@ def TFlujo():
 	#numero de ingreso y egreso
 	sql="SELECT * FROM MOVIMIENTO WHERE Id_Oficina_Origen=? AND Tipo_Flujo=? AND Year(Fecha_Movimiento)=Year(GETDATE())"
 	params=(oficina,tipoflujo)
-
 	rows=objConsulta.ConsultaMainDocParams(sql,params)
 
 	numeracion=None
@@ -57,8 +60,7 @@ def TFlujo():
 	
 
 	#codigo de seguimiento
-	sql1="SELECT * FROM DOCUMENTO WHERE CodigoSeguimiento=?"
-	
+	sql1="SELECT * FROM DOCUMENTO WHERE CodigoSeguimiento=?"	
 	codigo=None
 	while True:
 		codigo=utilidades.GeneracionCodigo(6)
@@ -75,7 +77,6 @@ def filldata():
 	sql="SELECT * FROM PERSONA WHERE DNI=?"
 	row=objConsulta.ConsultaMainDocParams(sql,(dni,))
 	datos=[{'nombre':val.Nombre,'apellidoP':val.ApellidoPaterno,'apellidoM':val.ApellidoMaterno} for val in row] if row else []
-
 	return jsonify({'datos':datos})
 
 
@@ -123,9 +124,8 @@ def insertDoc():
 		nro_insertdoc=objConsulta.InsertDataIdentity(sqlInsert,params)
 
 		codigodocumento=nro_insertdoc
-		sqlInsertMovimiento=f"""
-		INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,Id_Oficina_Destino,Id_Archivo,numeroIngreso,numeroEgreso,Tipo_Flujo)
-		OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?,?,?)
+		sqlInsertMovimiento=f"""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
+		Id_Oficina_Destino,Id_Archivo,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?,?,?)
 		"""
 		paramsMovimiento=(nro_insertdoc,idusuario,1,'',idoficinaorigen,codOf,idAdjunto,0,numeracion,tflujo)
 		nro_movimiento=objConsulta.InsertDataIdentity(sqlInsertMovimiento,paramsMovimiento)
@@ -139,10 +139,30 @@ def insertDoc():
 	Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad
 	INNER JOIN PERSONA AS P ON D.Emisor=P.Dni WHERE D.Id_Documento=?"""
 	rows_consulta_documento=objConsulta.ConsultaMainDocParams(SQL_DOCUMENTOS,(codigodocumento,))
-	utilidades.generarTicket(rows_consulta_documento,oficinas_codigo,'app/static/ticket/doc.pdf')
 
+	nombre_pdf=f'app/static/ticket/{nro_movimiento}_doc.pdf'
+	pdfname=f'{nro_movimiento}_doc.pdf'
+	utilidades.generarTicket(rows_consulta_documento,oficinas_codigo,nombre_pdf)
 
-	return[nro_movimiento]
+	return jsonify({'movimiento':nro_movimiento,'direccion':url_for('documents.ver_pdfticket',nombre=pdfname)})
+
+@documento_bp.route('/ver-pdf/<nombre>')
+def ver_pdfticket(nombre):
+	ruta=os.path.join(current_app.static_folder,'ticket',nombre)
+
+	if not os.path.exists(ruta):
+		return "Archivo no encontrado",404
+	
+	def borrar_archivo(path):
+		time.sleep(5)
+		try:
+			os.remove(path)
+		except Exception as e:
+			raise e
+		
+	threading.Thread(target=borrar_archivo, args=(ruta,)).start()
+	return send_file(ruta,mimetype="application/pdf")
+
 
 @documento_bp.route('/docin')
 @requires_permission(Permiso.DOC_BENTRADA)
@@ -156,10 +176,14 @@ def ingresoDocumento():
 	return render_template('/documentos/doc_ingreso.html',datos=rows,datos_recepcion=rows_recepcionadas,info={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina})
 
 @documento_bp.route('/docseg')
+@requires_permission(Permiso.DOC_SEGUIMIENTO)
+@login_required
 def segDocumento():	
 	return render_template('/documentos/doc_seguimiento.html',info={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina})
 
 @documento_bp.route('/followrequest',methods=['POST'])
+@requires_permission(Permiso.DOC_SEGUIMIENTO)
+@login_required
 def followS():
 	objConsulta=QueryDocumentos()
 	codigo=request.form.get('codigo')
@@ -330,6 +354,8 @@ def revertirdoc():
 	return jsonify(nro_Eliminacion)
 
 @documento_bp.route('/docobservados')
+@requires_permission(Permiso.DOC_OBSERVADOS)
+@login_required
 def docObservados():
 	objConsulta=QueryDocumentos()
 	sql_observados="""WITH ULTIMOSMOVIMIENTOS AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento 
@@ -343,6 +369,8 @@ def docObservados():
 
 
 @documento_bp.route('/subsanacion',methods=['POST'])
+@requires_permission(Permiso.DOC_OBSERVADOS)
+@login_required
 def SubsanarDoc():
 	objConsulta=QueryDocumentos()
 	archivo = request.files.get('adjunto')
@@ -372,14 +400,16 @@ def SubsanarDoc():
 
 		except Exception as e:
 			print(e)
-	return [controlador]
+	return jsonify(controlador)
 
 @documento_bp.route('/doc_historial')
+@requires_permission(Permiso.DOC_HISTORIAL)
 @login_required
 def HistorialDocumentos():	
 	return render_template('/documentos/doc_historial.html')
 
 @documento_bp.route('/fillhistorico',methods=['POST'])
+@requires_permission(Permiso.DOC_HISTORIAL)
 @login_required
 def historicoDocumento():
 	objConsulta=QueryDocumentos()
@@ -403,6 +433,7 @@ def historicoDocumento():
 	return jsonify({'datos':datos})
 
 @documento_bp.route('/filterfillhistorico',methods=['POST'])
+@requires_permission(Permiso.DOC_HISTORIAL)
 @login_required
 def historicoFilterDocumento():
 	objConsulta=QueryDocumentos()
@@ -410,7 +441,7 @@ def historicoFilterDocumento():
 	radio=request.form.get('radio')
 	datos=[]
 	if radio=='Ingreso':
-		sql="""SELECT O.nombre_oficina,M.numeroIngreso,M.numeroEgreso,D.Titulo,FORMAT(M.Fecha_Movimiento,'yyyy-MM-dd HH:mm') 
+		sql="""SELECT TOP 50 O.nombre_oficina,M.numeroIngreso,M.numeroEgreso,D.Titulo,FORMAT(M.Fecha_Movimiento,'yyyy-MM-dd HH:mm') 
 		AS Fecha_Movimiento,U.Nombre_Usuario,M.Tipo_Flujo,D.CodigoSeguimiento  
 		FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON M.Id_Documento=D.Id_Documento INNER JOIN USUARIO AS U ON		
 		M.Id_Usuario=U.Id_Usuario INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina 
@@ -422,7 +453,7 @@ def historicoFilterDocumento():
 			raise e
 
 	elif radio=='Egreso':
-		sql="""SELECT M.numeroEgreso,D.Titulo,FORMAT(M.Fecha_Movimiento,'yyyy-MM-dd HH:mm') AS Fecha_Movimiento,U.Nombre_Usuario,M.Tipo_Flujo,O.nombre_oficina,D.CodigoSeguimiento  FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON
+		sql="""SELECT TOP 50 M.numeroEgreso,D.Titulo,FORMAT(M.Fecha_Movimiento,'yyyy-MM-dd HH:mm') AS Fecha_Movimiento,U.Nombre_Usuario,M.Tipo_Flujo,O.nombre_oficina,D.CodigoSeguimiento  FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON
 		M.Id_Documento=D.Id_Documento INNER JOIN USUARIO AS U ON M.Id_Usuario=U.Id_Usuario INNER JOIN Oficina AS O ON M.Id_Oficina_Destino=O.Id_Oficina
 		WHERE M.Id_Oficina_Origen = ?  AND Tipo_Flujo = 'Egreso' AND D.Titulo LIKE ?"""		
 		try:
@@ -498,6 +529,7 @@ def SearchObservados():
 	return jsonify({'datos':datos})
 
 @documento_bp.route('/otherdocumentos')
+@requires_permission(Permiso.DOC_OTHERS)
 @login_required
 def OtherDocuments():
 	return render_template('/documentos/doc_others.html',info={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina})

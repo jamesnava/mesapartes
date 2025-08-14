@@ -1,100 +1,147 @@
 {%extends "/start/main.html"%}
 {%block info%}
-<input type="hidden" id="usuario_id" value="{{info.dni}}">
-<input type="hidden" id="oficina" value="{{info.oficina}}">  
-  <h6>Usuario: </h6>
-  <span>{{info.usuario}}</span>
+<input id="usuario_id" type="hidden" value="{{info.dni}}"/>
+<input id="oficina" type="hidden" value="{{info.oficina}}"/>
+<h6>
+    Usuario:
+</h6>
+<span>
+    {{info.usuario}}
+</span>
 {%endblock%}
 
 {%block content%}
 <div>
-<div class="titulomodulo">
-  <button class="btn btn-success" id="addbuttonoficina"><i class="fa fa-plus" title="Agregar"></i></button>
+    <div class="titulomodulo">
+        <button class="btn btn-success" id="addbuttonoficina">
+            <i class="fa fa-plus" title="Agregar">
+            </i>
+        </button>
+    </div>
+    <div class="contenedorgeneralHistorial">
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>
+                        codigo
+                    </th>
+                    <th>
+                        Oficina
+                    </th>
+                    <th>
+                        codigo Padre
+                    </th>
+                    <th>
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {%for val in rows%}
+                <tr>
+                    <td>
+                        {{val.Id_Oficina}}
+                    </td>
+                    <td>
+                        {{val.nombre_oficina}}
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary upbtnoficina" data-codigo="{{val.Id_Oficina}}">
+                            <i class="fas fa-pencil-square-o" title="Editar">
+                            </i>
+                        </button>
+                    </td>
+                    <tr>
+                        {%endfor%}
+                    </tr>
+                </tr>
+            </tbody>
+            <table>
+            </table>
+        </table>
+    </div>
 </div>
-<div class="contenedorgeneralHistorial">
-  <table class="table table-striped mt-3">
-      <thead>
-    <tr>       
-      <th>codigo</th>
-      <th>Oficina</th>
-      <th>codigo Padre</th>
-      <th>Acciones</th>         
-    </tr>
-  </thead>
-  <tbody>
-    
-    {%for val in rows%}
-    
-    <tr>      
-      <td>{{val.Id_Oficina}}</td>
-      <td>{{val.nombre_oficina}}</td>
-      <td></td>
-      <td><button class="btn btn-primary upbtnoficina" data-codigo={{val.Id_Oficina}} ><i class="fas fa-pencil-square-o" title="Editar"></i></button></td>
-    <tr>
-    {%endfor%}  
-  </tbody>
-<table>
-</div>
-</div>
-
 <!--agregar oficina-->
-<div class="modal fade" id="addoficina" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Nueva Oficina</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <label>Codigo</label>
-        <input type="text" class="form-control" id="oficodi" readonly>
-
-        <label>Oficina</label>
-        <input type="text" class="form-control" id="nameoficina">
-
-        <label>Padre</label>
-        <input type="text" class="form-control" id="codigopadre">
-
-        <label>Responsable</label>
-        <input type="text" class="form-control" id="responsableoficina" data-dni="">
-        <div id="iddivdestinoresponsable" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div>  
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="grabaroficina">Grabar</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
-      </div>
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="addoficina" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Nueva Oficina
+                </h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <label>
+                    Codigo
+                </label>
+                <input class="form-control" id="oficodi" readonly="" type="text"/>
+                <label>
+                    Oficina
+                </label>
+                <input class="form-control" id="nameoficina" type="text"/>
+                <label>
+                    Padre
+                </label>
+                <input class="form-control" id="codigopadre" type="text"/>
+                <label>
+                    Responsable
+                </label>
+                <input class="form-control" data-dni="" id="responsableoficina" type="text"/>
+                <div id="iddivdestinoresponsable" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="grabaroficina" type="button">
+                    Grabar
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
 <!--Modificar Oficina-->
-<div class="modal fade" id="updateoficina" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Modificar</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body"> 
-
-        <input type="hidden" id="codigoup" value="">      
-
-        <label>Oficina</label>
-        <input type="text" class="form-control" id="upnameoficina">
-
-        <label>Padre</label>
-        <input type="text" class="form-control" id="upcodigopadre">
-
-        <label>Responsable</label>
-        <input type="text" class="form-control" id="responsableoficinaup" data-dni="">
-        <div id="iddivresponsableup" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;"></div>  
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="upgrabaroficina">Grabar</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>        
-      </div>
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="updateoficina" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Modificar
+                </h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button">
+                </button>
+            </div>
+            <div class="modal-body">
+                <input id="codigoup" type="hidden" value=""/>
+                <label>
+                    Oficina
+                </label>
+                <input class="form-control" id="upnameoficina" type="text"/>
+                <label>
+                    Padre
+                </label>
+                <input class="form-control deleteinput" id="upcodigopadre" type="text"/>
+                <label>
+                    Responsable
+                </label>
+                <input class="form-control deleteinput" data-dni="" id="responsableoficinaup" type="text"/>
+                <div id="iddivresponsableup" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="upgrabaroficina" type="button">
+                    Grabar
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">
+                    Cerrar
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
 {%endblock%}

@@ -9,7 +9,8 @@ $(document).ready(function(){
 			}
 		});
 
-	});	
+	});
+
 
 	$('#responsableoficina').on('keyup',function(){
 	valor=$('#responsableoficina').val();	
@@ -89,6 +90,17 @@ $(document).ready(function(){
 		const codigo=$(this).data('codigo');
 		$('#codigoup').val(codigo);
 		$('#updateoficina').modal('show');
+		$.ajax({
+			type:'POST',
+			url:'/office/fillupdateoffice',
+			data:{'codigo':codigo},
+			success:function(response){
+				$('#responsableoficinaup').val(response.datospersonales);
+				$('#responsableoficinaup').attr('dni',response.dni);				
+				$('#upcodigopadre').val(response.codigopadre);
+
+			}
+		});
 	});
 
 	$('#upgrabaroficina').on('click',function(){
@@ -98,19 +110,30 @@ $(document).ready(function(){
 		const responsable=$('#responsableoficinaup').data('dni');
 
 		datos={'codigo':codigo,'nombre':nombre,'responsable':responsable,'codigopadre':padre}
+		console.log(datos);
+
 		$.ajax({
 			url:'/office/updateoficina',
 			type:'POST',
 			data:datos,
 			success:function(response){
-				if (response===1){
+				if (response==1){
 					mostrarMensaje('success','Actualizacion correcta!!');
 					setTimeout(function(){location.reload(true);},1000)
 				}
+				else{
+					mostrarMensaje('error','No pudo actualizar');
+					//setTimeout(function(){location.reload(true);},1000);
+				}
 			}
+
 		});
 
 	});
+
+$('.deleteinput').on('click',function(){
+	$(this).val("");	
+});
 
 
 });
