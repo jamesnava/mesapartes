@@ -199,9 +199,15 @@ $('#grabardoc').on('click',function(){
 
 	idusuario=$('#usuario_id').val()
 	oficina=$('#oficina').val()
+	//recuperando los documentos de referencia...
+	iddocreferencia=$('#inputdocreferencia').data('iddocreferencia');
+	idmovimientoreferencia=$('#inputdocreferencia').data('idmovimientoreferencia');
 
-	formData.append('idusuario',idusuario)
-	formData.append('idoficinaorigen',oficina)
+	formData.append('idusuario',idusuario);
+	formData.append('idoficinaorigen',oficina);
+
+	formData.append('refiddoc',iddocreferencia);
+	formData.append('refidmov',idmovimientoreferencia);
 
 	$.ajax({
 		url:'/documents/insertdocument',
@@ -234,12 +240,14 @@ $('#grabardoc').on('click',function(){
 
 $('.ver-pdf').on('click',function(){
 	const url=$(this).data('url');
+	console.log(url);
 	$('#visorPDF').attr('src', "/static/uploads/"+url);	
   $('#verpdf').modal('show');
 });
 
+
 $('.acciones').on('click',function(){
-	
+	$('#idmovi').val($(this).data('idmovimiento'));
 	$.ajax({
 		url:'/documents/acciones',
 		type:'POST',
@@ -253,6 +261,7 @@ $('.acciones').on('click',function(){
 	});
 	$('#veracciones').modal('show');
 });
+
 
 $('#tipoAccion').on('change',function(){
 	const accion=$(this).val();
@@ -299,7 +308,8 @@ $('.recepcionardoc').on('click',function(){
 $('#btnConfirmarAccion').on('click',function(){
 	accion=$('#tipoAccion').val();
 	comentario=$('#comentarioAccion').val();
-	idmovimiento=$('#idmov').val();
+	idmovimiento=$('#idmovi').val();
+
 	const codigo = $('#tableoficinasD tbody tr:first td:first').text();
 	$.ajax({
 			url:'/documents/confirmaraccion',
@@ -331,6 +341,7 @@ $('#btnconsultar').on('click',function(){
           <tr>
             <td>${valores.fecha}</td>
             <td>${valores.accion}</td>
+            <td>${valores.documento}</td>
             <td>${valores.origen}</td>
             <td>${valores.destino}</td>
             <td>${valores.usuario}</td>
@@ -766,6 +777,118 @@ $.ajax({
 	}
 });
 
+});
+
+$('.btnanular').on('click',function(){
+	$('#manular').modal('show');
+	$('#txtidmovimientoA').val($(this).data('idmovimiento'));
+
+});
+
+//guardar anulacion
+$('#btnsaveanulacion').on('click',function(){
+	const idmovimiento=$('#txtidmovimientoA').val();
+	const accion=12;
+	const comentario=$('#comentarioAnular').val();
+
+	Swal.fire({
+    title: '¿Estás seguro anular?',
+    text: "Recuerde que anulado el documento no se puede revertir",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, continuar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+    	$.ajax({
+		type:'POST',
+		url:'/documents/anulardocumento',
+		data:{'idmovimiento':idmovimiento,'accion':accion,'comentario':comentario},
+		success: function(response){
+			if (response==1){
+				$('manular').modal('hide');
+				mostrarMensaje('success','Exitoso');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+			else{
+				$('manular').modal('hide');
+				mostrarMensaje('error','No se pudo anular');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+
+		}
+	});
+
+    }
+  });
+
+	
+
+});
+
+$('#valorcheckreferencia').on('change',function(){
+	if ($(this).is(':checked')){
+		$('#inputdocreferencia').val('');
+		$('#inputdocreferencia').attr('data-iddocreferencia','');
+		$('#inputdocreferencia').attr('data-idmovimientoreferencia','');
+		$('#inputdocreferencia').prop('readonly',false);
+	}
+	else{
+		$('#inputdocreferencia').val('');
+		$('#inputdocreferencia').attr('data-iddocreferencia','');
+		$('#inputdocreferencia').attr('data-idmovimientoreferencia','');
+		$('#inputdocreferencia').prop('readonly',true);
+	}
+});
+
+
+$('#inputdocreferencia').on('keyup',function(){
+
+	valor=$(this).val();
+
+	$.ajax({
+		url:'/documents/searchdocuments',
+		type:'POST',
+		data:{'valor':valor,'tipo':'REFERENCIA'},
+		success:function(response){
+			var resultadosHtml='';
+			$.each(response.datos,function(index,documentos){
+				resultadosHtml+=`<p style="cursor: pointer;background:#666a70" data-idmovimiento=${documentos.idmovimiento} data-id=${documentos.iddocumento}>${documentos.titulo} </p>`;
+			});
+			$('#iddivreferenciadoc').show();
+			$('#iddivreferenciadoc').html(resultadosHtml);
+		}
+	});
+});
+
+$('#iddivreferenciadoc').on('click','p',function(){
+	const iddocumento=$(this).data('id');
+	const nombre=$(this).text();
+	const idmovimiento=$(this).data('idmovimiento');
+	//insertando al input
+	$('#inputdocreferencia').val(nombre);
+	$('#inputdocreferencia').attr('data-iddocreferencia',iddocumento);
+	$('#inputdocreferencia').attr('data-idmovimientoreferencia',idmovimiento);
+	$('#iddivreferenciadoc').hide();
+
+});
+
+$('.btnticket').on('click',function(){
+	const idmovimiento=$(this).data('idmovimiento');
+	$.ajax({
+		url:'/documents/seeticketa',
+		type:'POST',
+		data:{idmovimiento:idmovimiento},
+		success:function(response){
+			//mostrar div de impresion
+				$('#verconstanciag').attr('src',response.direccion);
+				$('#constanciag').modal('show');
+				$('#constanciag').on('hidden.bs.modal', function () {
+  					location.reload(true);
+				});
+
+		}
+	});
 });
 
 

@@ -3,63 +3,71 @@
 {%endblock%}
 
 {%block content%}
-<div class="contenedorgeneralHistorial" data-simplebar="">
-    <div class="card mt-4 shadow">
-        <div class="card-header bg-primary text-white contenedordocumento">
-            <h5 class="mb-0">
-                Documentos Derivados
-            </h5>
+<div>
+    <div class="contenedorgeneralHistorial" data-simplebar="">
+        <div class="card mt-4 shadow">
+            <div class="card-header bg-primary text-white contenedordocumento">
+                <h5 class="mb-0">
+                    Documentos Derivados
+                </h5>
+            </div>
+            <table border="1" class="table table-hover table-bordered align-middle mb-0">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th>
+                            Código
+                        </th>
+                        <th>
+                            Asunto
+                        </th>
+                        <th>
+                            Destino
+                        </th>
+                        <th>
+                            Fecha
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th>
+                            Acción
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for val in datos%}
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            {{val.Asunto}}
+                        </td>
+                        <td>
+                            {{val.nombre_oficina}}
+                        </td>
+                        <td>
+                            {{val.FechaFormateada}}
+                        </td>
+                        <td>
+                            {{val.Nombre_estado}}
+                        </td>
+                        <td>
+                            <button class="btn btn-danger salidadoc" data-idmovimientoderivado="{{val.Id_Movimiento}}" type="button">
+                                <i class="fas fa-reply-all" title="Revertir">
+                                </i>
+                            </button>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
         </div>
-        <table border="1" class="table table-hover table-bordered align-middle mb-0">
-            <thead class="table-light text-center">
-                <tr>
-                    <th>
-                        Código
-                    </th>
-                    <th>
-                        Asunto
-                    </th>
-                    <th>
-                        Destino
-                    </th>
-                    <th>
-                        Fecha
-                    </th>
-                    <th>
-                        Estado
-                    </th>
-                    <th>
-                        Acción
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {%for val in datos%}
-                <tr>
-                    <td>
-                    </td>
-                    <td>
-                        {{val.Asunto}}
-                    </td>
-                    <td>
-                        {{val.nombre_oficina}}
-                    </td>
-                    <td>
-                        {{val.FechaFormateada}}
-                    </td>
-                    <td>
-                        {{val.Nombre_estado}}
-                    </td>
-                    <td>
-                        <button class="btn btn-danger salidadoc" data-idmovimientoderivado="{{val.Id_Movimiento}}" type="button">
-                            <i class="fas fa-reply-all" title="Revertir">
-                            </i>
-                        </button>
-                    </td>
-                </tr>
-                {%endfor%}
-            </tbody>
-        </table>
+    </div>
+    <div class="titulomodulo">
+        <a class="btn btn-success" href="{{url_for('documents.documentosGenerate')}}">
+            <i aria-hidden="true" class="fas fa-arrow-right" title="Documentos Generados">
+            </i>
+        </a>
     </div>
 </div>
 {%endblock%}

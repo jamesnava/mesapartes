@@ -31,6 +31,7 @@ def searchResponsable():
 	return jsonify({'responsable':datos})
 
 @oficina_bp.route('/insertoficina',methods=['POST'])
+@login_required
 def insertOficina():
 	objconsulta=QueryDocumentos()
 	codigo=request.form.get('codigo')
@@ -40,11 +41,16 @@ def insertOficina():
 
 	sql="""INSERT INTO Oficina(Id_Oficina,nombre_oficina,Id_Oficina_Padre,Responsable) VALUES(?,?,?,?)"""
 	params=(codigo,nombre,padre,responsable)
-	numero=objconsulta.InsertDataGeneral(sql,params)
-
-	return [numero]
+	numero=0
+	try:
+		numero=objconsulta.InsertDataGeneral(sql,params)
+	except Exception as e:
+		raise e
+	
+	return jsonify(numero)
 
 @oficina_bp.route('/updateoficina',methods=['POST'])
+@login_required
 def updateOficina():
 	objconsulta=QueryDocumentos()
 	codigo=request.form.get('codigo')

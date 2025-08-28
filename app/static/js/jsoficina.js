@@ -12,6 +12,7 @@ $(document).ready(function(){
 	});
 
 
+
 	$('#responsableoficina').on('keyup',function(){
 	valor=$('#responsableoficina').val();	
 	$.ajax({
@@ -70,14 +71,15 @@ $(document).ready(function(){
 		const codigo=$('#oficodi').val();
 		const nombre=$('#nameoficina').val();
 		const padre=$('#codigopadre').val();
-		const responsable=$('#codigopadre').data('dni')	;
+		const responsable=$('#responsableoficina').data('dni')	;
 		datos={'codigo':codigo,'nombre':nombre,'padre':padre,'responsable':responsable}
+
 		$.ajax({
 			url:'/office/insertoficina',
 			type:'POST',
 			data:datos,
 			success:function(response){
-				if(response===1){
+				if(response==1){
 					mostrarMensaje('success','Exitoso!')
 					setTimeout(function(){location.reload(true);},1000);
 				}
@@ -96,7 +98,7 @@ $(document).ready(function(){
 			data:{'codigo':codigo},
 			success:function(response){
 				$('#responsableoficinaup').val(response.datospersonales);
-				$('#responsableoficinaup').attr('dni',response.dni);				
+				$('#responsableoficinaup').attr('data-dni',response.dni);				
 				$('#upcodigopadre').val(response.codigopadre);
 
 			}

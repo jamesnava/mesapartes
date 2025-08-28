@@ -4,6 +4,7 @@ from app.modelos.userModel import User
 class QueryL(object):
 
 	def cargarUsuario(self,query,params):
+		rows=[]
 		try:
 			#obj_user=User()
 			

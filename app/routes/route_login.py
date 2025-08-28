@@ -30,15 +30,20 @@ def inicio():
 		sql=f"""SELECT * FROM USUARIO WHERE Nombre_Usuario=?"""
 		obj_query=QueryL()		
 		user=obj_query.cargarUsuario(sql,(usuario,))
-		
-		if user.estado=='ACTIVO':
-			if user and check_password_hash(user.password,clave):
-				login_user(user,remember=recordar)			
-				next_page = request.args.get('next')			
-				return redirect(next_page or url_for('main.principal'))
+		print(user)
+		if user:
+			if  user.estado=='ACTIVO':
+				if  (user and check_password_hash(user.password,clave)):
+					login_user(user,remember=recordar)			
+					next_page = request.args.get('next')			
+					return redirect(next_page or url_for('main.principal'))
+
+				else:
+					mensaje="Clave o Usuario son incorrectas"
 			else:
-				mensaje="Clave o Usuario son incorrectas"
+				mensaje="Usuario Inactivo"
 		else:
-			mensaje="Usuario Inactivo"
-	
+			mensaje="Credenciales inválidos!!"		
+			
+
 	return render_template('/start/inicio.html',form=form,mensaje=mensaje)
