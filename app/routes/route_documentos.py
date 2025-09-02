@@ -448,32 +448,34 @@ def docObservados():
 def SubsanarDoc():
 	objConsulta=QueryDocumentos()
 	archivo = request.files.get('adjunto')
+	comentario=request.form.get('scomentario')
 	idmovimiento=request.form.get('idmovimientooculto')
 	sql_consulta="""SELECT M.*,D.Id_Documento FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON M.Id_Documento=D.Id_Documento WHERE
 	 M.Id_Movimiento=?"""
 	rows_doc=objConsulta.ConsultaMainDocParams(sql_consulta,(idmovimiento,))	
 	controlador=0
-	if archivo:
-		try:
+	
+	try:
+		nombre_unico=''
+		if archivo:	
 			extension = os.path.splitext(archivo.filename)[1]
 			nombre_unico = f"{uuid.uuid4().hex}{extension}"
 			ruta = os.path.join('app', 'static', 'uploads', nombre_unico)		
 			archivo.save(ruta)
-			sqlInsertAdjunto="INSERT INTO Adjunto(url_archivo) OUTPUT INSERTED.Id_Adjunto VALUES(?)"
-			idAdjunto=objConsulta.InsertDataIdentity(sqlInsertAdjunto,(nombre_unico,))
+		sqlInsertAdjunto="INSERT INTO Adjunto(url_archivo) OUTPUT INSERTED.Id_Adjunto VALUES(?)"
+		idAdjunto=objConsulta.InsertDataIdentity(sqlInsertAdjunto,(nombre_unico,))
 
-			#modificamos documento
-			sql_update="UPDATE DOCUMENTO SET Id_Adjunto=?,Estado=? WHERE Id_Documento=?"			
-			nros=objConsulta.InsertDataGeneral(sql_update,(idAdjunto,5,rows_doc[0].Id_Documento))
-			if nros:
-				sql_insert="""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
-				Id_Oficina_Destino,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento
-				VALUES(?,?,GETDATE(),?,?,?,?,?,?,?)"""
-				params=(rows_doc[0].Id_Documento,current_user.id,5,'',current_user.id_oficina,rows_doc[0].Id_Oficina_Origen,0,0,'Interno')
-				controlador=objConsulta.InsertDataIdentity(sql_insert,params)
-
-		except Exception as e:
-			print(e)
+		#modificamos documento
+		sql_update="UPDATE DOCUMENTO SET Id_Adjunto=?,Estado=? WHERE Id_Documento=?"			
+		nros=objConsulta.InsertDataGeneral(sql_update,(idAdjunto,5,rows_doc[0].Id_Documento))
+		if nros:
+			sql_insert="""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
+			Id_Oficina_Destino,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento
+			VALUES(?,?,GETDATE(),?,?,?,?,?,?,?)"""
+			params=(rows_doc[0].Id_Documento,current_user.id,5,comentario,current_user.id_oficina,rows_doc[0].Id_Oficina_Origen,0,0,'Interno')
+			controlador=objConsulta.InsertDataIdentity(sql_insert,params)
+	except Exception as e:
+		print(e)
 	return jsonify(controlador)
 
 @documento_bp.route('/doc_historial')
