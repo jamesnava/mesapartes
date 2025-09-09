@@ -45,8 +45,7 @@ def insertOficina():
 	try:
 		numero=objconsulta.InsertDataGeneral(sql,params)
 	except Exception as e:
-		raise e
-	
+		raise e	
 	return jsonify(numero)
 
 @oficina_bp.route('/updateoficina',methods=['POST'])

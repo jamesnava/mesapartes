@@ -69,7 +69,7 @@
                         {{val.nombre_oficina}}
                     </td>
                     <td style="text-align: center;">
-                        <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'Inmediata' %}prioridad-inmediata {% elif val.Nombre_Prioridad == 'Alta' %}prioridad-alta {% elif val.Nombre_Prioridad == 'Media' %}prioridad-media {% elif val.Nombre_Prioridad == 'Baja' %}prioridad-baja {% elif val.Nombre_Prioridad == 'Muy Baja' %}prioridad-muy-baja {% endif %}" title="{{val.Nombre_Prioridad}}">
+                        <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'URGENTE' %}prioridad-URGENTE {% elif val.Nombre_Prioridad == 'NORMAL' %}prioridad-NORMAL {% elif val.Nombre_Prioridad == 'BAJO' %}prioridad-BAJO{% endif %}" title="{{val.Nombre_Prioridad}}">
                         </i>
                     </td>
                     <td>
@@ -152,7 +152,7 @@
                         {{val.nombre_oficina}}
                     </td>
                     <td style="text-align:center;">
-                        <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'Inmediata' %}prioridad-inmediata {% elif val.Nombre_Prioridad == 'Alta' %}prioridad-alta {% elif val.Nombre_Prioridad == 'Media' %}prioridad-media {% elif val.Nombre_Prioridad == 'Baja' %}prioridad-baja {% elif val.Nombre_Prioridad == 'Muy Baja' %}prioridad-muy-baja {% endif %}" title="{{val.Nombre_Prioridad}}">
+                        <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'URGENTE' %}prioridad-URGENTE {% elif val.Nombre_Prioridad == 'NORMAL' %}prioridad-NORMAL {% elif val.Nombre_Prioridad == 'BAJO' %}prioridad-BAJO {% endif %}" title="{{val.Nombre_Prioridad}}">
                         </i>
                     </td>
                     <input id="idmov" name="" type="hidden" value="{{val.Id_Movimiento}}"/>

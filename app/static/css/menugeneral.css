@@ -260,7 +260,7 @@ margin: 0;
   display: flex;
   background-color: #15597c;
   width: 100%;
-  height: 5%;
+  height: 4%;
   margin-top: 1px;
   justify-content: right;
   color: white;
@@ -446,9 +446,8 @@ fieldset {
 
 
 /*colores de fila de prioridades*/
-.prioridad-inmediata  { color: #ff4d4d; }
-.prioridad-alta       { color: #ff944d; }
-.prioridad-media      { color: #fff176; }
-.prioridad-baja       { color: #aed581; }
-.prioridad-muy-baja   { color: #bdbdbd; }
+.prioridad-URGENTE  { color: #94030E; }
+.prioridad-NORMAL   { color: #0A6323; }
+.prioridad-BAJO     { color: #779CED; }
+
 

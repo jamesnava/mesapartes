@@ -1,19 +1,38 @@
 {%extends "start/main.html"%}
+{%block info%}
+<p class="m-2">
+    Usuario:
+    <em>
+        {{datos.usuario}}
+    </em>
+</p>
+<p class="m-2">
+    Oficina:
+    <span>
+        {{datos.oficina}}
+    </span>
+</p>
+{%endblock%}
 
 {%block content%}
 <div class="contenedorinterno">
-	<div class="menubutton">
-		<a href="{{url_for('rol.rol')}}">
-		<img src="{{url_for('static',filename='/img/crear.svg')}}" width="90" height="90">
-		<h3>Crea Rol</h3>
-		</a>
-	</div>
-
-	<div class="menubutton">
-		<a href="{{url_for('rol.modulo')}}">
-		<img src="{{url_for('static',filename='/img/modulo.svg')}}" width="90" height="90">
-		<h3>Asignar Modulos</h3>
-		</a>
-	</div>
+    <div class="menubutton">
+        <a href="{{url_for('rol.rol')}}">
+            <img height="90" src="{{url_for('static',filename='/img/crear.svg')}}" width="90">
+                <h3>
+                    Crea Rol
+                </h3>
+            </img>
+        </a>
+    </div>
+    <div class="menubutton">
+        <a href="{{url_for('rol.modulo')}}">
+            <img height="90" src="{{url_for('static',filename='/img/modulo.svg')}}" width="90">
+                <h3>
+                    Asignar Modulos
+                </h3>
+            </img>
+        </a>
+    </div>
 </div>
 {%endblock%}

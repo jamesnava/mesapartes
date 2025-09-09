@@ -10,6 +10,7 @@ from app.routes.route_personuser import puser_bp
 from app.routes.route_reporte import reporte_bp
 from app.modelos.QueryLogin import QueryL
 from app.modelos.QueryDocumento import QueryDocumentos
+#from app.grafico.dash_reporte import init_dashboard
 
 
 app=Flask(__name__)
@@ -22,7 +23,8 @@ login.login_view='auth.inicio'
 @login.user_loader
 def load_user(id_user):
 	obj_consulta=QueryL()
-	sql=f"""SELECT * FROM USUARIO WHERE Id_Usuario=?"""	 
+	sql=f"""SELECT U.Id_Usuario,U.Nombre_Usuario,U.Contrasena,U.Id_Oficina,U.Estado,O.nombre_oficina FROM USUARIO
+	 AS U INNER JOIN Oficina AS O ON U.Id_Oficina=O.Id_Oficina WHERE U.Id_Usuario=?"""	 
 	user=obj_consulta.cargarUsuario(sql,(id_user,))	
 	return user
 
@@ -53,4 +55,7 @@ app.register_blueprint(documento_bp)
 app.register_blueprint(oficina_bp)
 app.register_blueprint(puser_bp)
 app.register_blueprint(reporte_bp)
+
+#registrando dashboard
+#init_dashboard(app)
 

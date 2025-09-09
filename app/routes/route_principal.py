@@ -12,7 +12,8 @@ main_bp=Blueprint('main',__name__,url_prefix='/main')
 def cargar_usuario():
 	if current_user.is_authenticated:
 		obj_consulta=QueryL()
-		sql=f"""SELECT * FROM USUARIO WHERE Id_Usuario=?"""
+		sql=f"""SELECT U.Id_Usuario,U.Nombre_Usuario,U.Contrasena,U.Id_Oficina,U.Estado,O.nombre_oficina FROM USUARIO
+	 		AS U INNER JOIN Oficina AS O ON U.Id_Oficina=O.Id_Oficina WHERE U.Id_Usuario=?"""
 		g.user=obj_consulta.cargarUsuario(sql,(current_user.id))
 
 
@@ -35,7 +36,6 @@ def principal():
 	params=(current_user.id_oficina)	
 	rows=objConsulta.ConsultaMainDocParams(sql,params)
 
-
 	#documentos pendiente a atencion
 	sql_P_Atencion="""WITH UltimosMovimientos AS (
   	SELECT *,
@@ -55,6 +55,8 @@ def principal():
 					SELECT COUNT(*) AS observados FROM 
 					ULTIMOSMOVIMIENTOS AS UM INNER JOIN DOCUMENTO AS D ON UM.Id_Documento=D.Id_Documento WHERE UM.fila=1 AND 
 					UM.Id_Accion=? AND UM.Id_Oficina_Destino=?"""
+
+
 					
 	rows_observados=objConsulta.ConsultaMainDocParams(sql_observado,(4,current_user.id_oficina))
 
@@ -62,24 +64,30 @@ def principal():
 
 	rows_pendientesAtencion=objConsulta.ConsultaMainDocParams(sql_P_Atencion,paramspatencion)
 
+	#consultado la leyenda
+	sql_leyenda="SELECT * FROM Tipos_Prioridad"
+	rows_prioridades=objConsulta.ConsultaMainDoc(sql_leyenda)
+
+
 	pendientesRecepcion=rows[0].pendientes if rows else 0
 	pendientesAtencion=rows_pendientesAtencion[0].pendientes if rows else 0
 	observadosdoc=rows_observados[0].observados if rows_observados else 0
 
 
-	return render_template('/start/main.html',usuario=current_user.username,pendientesRecepcion=pendientesRecepcion,pendientesA=pendientesAtencion,observados=observadosdoc)
+	return render_template('/start/main.html',usuario=current_user.username,prioridades=rows_prioridades,oficina=current_user.nombre_oficina,pendientesRecepcion=pendientesRecepcion,pendientesA=pendientesAtencion,observados=observadosdoc)
 
 @main_bp.route("/roles")
 @requires_permission(Permiso.ROL,Permiso.PERMISO)
 @login_required
 def rolesPermisos():
-	return render_template('/roles/menuroles.html')
+	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.nombre_oficina}
+	return render_template('/roles/menuroles.html',datos=datos)
 
 @main_bp.route('/documentos')
 @requires_permission(Permiso.DOCUMENTO)
 @login_required
 def documentos():
-	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
+	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina,'nombreo':current_user.nombre_oficina}
 	return render_template('/documentos/doc_principal.html',datos=datos)
 
 @main_bp.route('/oficinap')
@@ -87,16 +95,19 @@ def documentos():
 @login_required
 def oficinaplantilla():
 	objConsulta=QueryDocumentos()
-	sql="SELECT * FROM Oficina"
+	sql="""SELECT O1.nombre_oficina AS OPADRE,O1.Id_Oficina CPADRE,O2.nombre_oficina as OHIJO,O2.Id_Oficina AS CHIJO
+	FROM Oficina AS O1 INNER JOIN Oficina AS O2 ON O2.Id_Oficina_Padre=O1.Id_Oficina"""
 	rows_consulta=objConsulta.ConsultaMainDoc(sql)
-	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
+	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.nombre_oficina}
 	return render_template('/oficinas/Oficinas.html',info=datos,rows=rows_consulta)
+
+
 
 @main_bp.route('/peruser')
 @requires_permission(Permiso.PERSONA,Permiso.USUARIO)
 @login_required
 def userperson():
-	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
+	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.nombre_oficina}
 	return render_template('/personas/peruserprincipal.html',info=datos)
 
 @main_bp.route('/changepassword',methods=['POST'])

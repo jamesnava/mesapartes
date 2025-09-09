@@ -2,12 +2,18 @@
     {%block info%}
 <input id="usuario_id" type="hidden" value="{{datos.dni}}"/>
 <input id="oficina" type="hidden" value="{{datos.oficina}}"/>
-<h6>
+<p class="m-2">
     Usuario:
-</h6>
-<span>
-    {{datos.usuario}}
-</span>
+    <em>
+        {{datos.usuario}}
+    </em>
+</p>
+<p class="m-2">
+    Oficina:
+    <span>
+        {{datos.nombreo}}
+    </span>
+</p>
 {%endblock%}
 
     {%block content%}
@@ -97,13 +103,13 @@
                 <form autocomplete="off" enctype="multipart/form-data" id="formulariodocumento" method="POST">
                     <div class="mb-3">
                         <label>
-                            Titulo
+                            Titulo *
                         </label>
                         <input class="form-control" id="titulodoc" name="titulodoc" type="text"/>
                     </div>
                     <div class="mb-3">
                         <label>
-                            Asunto
+                            Asunto *
                         </label>
                         <input class="form-control" id="Asunto" name="Asunto" type="text"/>
                     </div>
@@ -129,7 +135,7 @@
                     </div>
                     <div class="mb-3">
                         <label>
-                            Destino
+                            Destino *
                         </label>
                         <input class="form-control" id="destino" type="text"/>
                         <div id="iddivdestino" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;">
@@ -154,16 +160,15 @@
                         </table>
                     </div>
                     <div class="mb-3">
-                        <label>
-                            Dni Emisor
-                        </label>
-                        <input class="form-control" id="Emisor" name="Emisor" type="text"/>
+                        <input class="form-control" id="Emisor" name="Emisor" type="hidden"/>
                     </div>
                     <div class="mb-3">
                         <label>
-                            Datos Emisor
+                            Datos Emisor *
                         </label>
                         <input class="form-control" id="DEmisor" name="DEmisor" type="text"/>
+                        <div id="iddivemisor" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff; border-radius: 5px;">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label>
@@ -185,6 +190,22 @@
                             <input class="form-control" data-iddocreferencia="" data-idmovimientoreferencia="" id="inputdocreferencia" name="DReferencia" readonly="" type="text"/>
                             <div id="iddivreferenciadoc" style="max-height: 200px;width: 300px; overflow-y: auto;background-color: #434a54;color:#fff;">
                             </div>
+                            <table class="table" id="tableoficinas">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">
+                                            Codigo
+                                        </th>
+                                        <th scope="col">
+                                            Documento
+                                        </th>
+                                        <th scope="col">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
                         </fieldset>
                     </div>
                 </form>

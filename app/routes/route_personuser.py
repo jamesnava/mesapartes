@@ -30,7 +30,7 @@ def templatePerson():
 	return render_template('/personas/persona.html',info=datos,rows=rows)
 
 @puser_bp.route('/insertperson',methods=['POST'])
-@requires_permission('Permiso.PERSONA')
+@requires_permission(Permiso.PERSONA)
 @login_required
 def insertperson():
 	objConsulta=QueryDocumentos()
@@ -42,8 +42,11 @@ def insertperson():
 	telefono=request.form.get('telefonop')
 	distrito=request.form.get('distritop')
 	direccion=request.form.get('direccionp')
-	sql="""INSERT INTO PERSONA(Dni,Nombre,ApellidoPaterno,ApellidoMaterno,Email,Telefono,Distrito,Direccion) VALUES(?,?,?,?,?,?,?,?)"""
 
+	if not (dni.isdigit() and len(dni)==8):
+		return jsonify(-2)
+	
+	sql="""INSERT INTO PERSONA(Dni,Nombre,ApellidoPaterno,ApellidoMaterno,Email,Telefono,Distrito,Direccion) VALUES(?,?,?,?,?,?,?,?)"""
 	#comprobar si existe
 	sql_confirmar="SELECT * FROM PERSONA WHERE Dni=?"
 	controlador=0
@@ -53,7 +56,7 @@ def insertperson():
 	else:
 		params=(dni,nombre,apellidop,apellidom,email,telefono,distrito,direccion)
 		controlador=objConsulta.InsertDataGeneral(sql,params)
-	return [controlador]
+	return jsonify(controlador)
 
 @puser_bp.route('/updateperson',methods=['POST'])
 @requires_permission(Permiso.PERSONA)

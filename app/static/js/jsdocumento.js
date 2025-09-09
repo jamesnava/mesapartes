@@ -15,8 +15,17 @@ $(document).ready(function(){
     // Deshabilita visualmente
     $btn.prop('disabled', true)
         .data('texto-original', $btn.text())
-        .text('Procesando...');      
+        .text('Procesando...');
+
+
+      setTimeout(function() {
+        $btn.data('processing', false);
+        $btn.prop('disabled', false)
+            .text($btn.data('texto-original'));
+    }, 5000); 
+
     });
+
 
 
 $('#cargarPlantilla').on('click',function(){
@@ -183,7 +192,6 @@ $('#Emisor').on('keydown',function(event){
 });
 
 $('#grabardoc').on('click',function(){
-
 	const formData=new FormData($('#formulariodocumento')[0]);
 	let totalFilas = 0;
 	//recorremos la tabla
@@ -217,7 +225,7 @@ $('#grabardoc').on('click',function(){
 		processData:false,
 		success: function(response){
 
-			if (response.movimiento!=0){
+			if (response.movimiento!=0 && response.movimiento!=-1){
 				mostrarMensaje('success','Exitoso!');
 				
 				//mostrar div de impresion
@@ -227,6 +235,9 @@ $('#grabardoc').on('click',function(){
   					location.reload(true);
 				});
 
+			}
+			else if(response.movimiento==-1){
+				mostrarMensaje('error','llene los campos ');
 			}
 			else{
 				mostrarMensaje('error','Ocurrio Algo!');
@@ -463,10 +474,14 @@ $('#adjunto').on('change', function () {
 
 $('input[name="rfilter"]').on('change',function(){
 	const seleccion=$(this).val();
+	fechai=$('#fechai').val();
+	fechaf=$('#fechaf').val();
+	if (fechai!=='' && fechaf!==''){
+	
 	$.ajax({
 		url:'/documents/fillhistorico',
 		type:'POST',
-		data:{'tipo':seleccion} ,
+		data:{'tipo':seleccion,'fechai':fechai,'fechaf':fechaf},
 		success:function(response){
 			$('#tablehistorico').empty()
 			$.each(response.datos,function(index,valores){
@@ -486,6 +501,11 @@ $('input[name="rfilter"]').on('change',function(){
 
 		}
 	});
+
+	}
+	else{
+		mostrarMensaje('error','Seleccione la fecha');
+	}
 
 });
 
@@ -873,6 +893,8 @@ $('#iddivreferenciadoc').on('click','p',function(){
 
 });
 
+
+
 $('.btnticket').on('click',function(){
 	const idmovimiento=$(this).data('idmovimiento');
 	$.ajax({
@@ -891,17 +913,174 @@ $('.btnticket').on('click',function(){
 	});
 });
 
+$('.EditarM').on('click',function(){
+	$('#meditardocumento').modal('show');
+	const idmovimiento=$(this).data('idmovimiento');	
+	$.ajax({
+		type:'POST',
+		url:'/documents/searchupdatedocumento',
+		data:{idmovimiento:idmovimiento},
+		success:function(response){
+			$('#TdocE').empty();
+			$('#prioridadE').empty();
+			$.each(response.tiposdoc,function(index,valores){
+				$('#TdocE').append(`<option value=${valores.iddoc}>${valores.nametipodocumento}</option>`)
+			});
+
+			$.each(response.tiposprioridad,function(index,valores){
+				$('#prioridadE').append(`<option value=${valores.idprioridad}>${valores.nameprioridad}</option>`)
+			});
+
+			$('#titulodocE').val(response.datos.titulo);
+			$('#AsuntoE').val(response.datos.Asunto);
+			$('#destinoE').val(response.datos.destino);
+			$('#documento').val(response.datos.iddocumento);
+			$('#movimiento').val(idmovimiento);
+			$('#EmisorE').val(response.datos.dniemisor);
+
+		}
+	});
+
+});
+
+$('#DEmisor').on('keyup',function(){
+	const valor=$(this).val();
+	$.ajax({
+		type:'POST',
+		url:'/documents/searchemisordoc',
+		data:{'valor':valor},
+		success:function(response){
+			var htmldiv='';
+			$.each(response.datos,function(index,valores){
+				htmldiv+=`<p style="cursor: pointer;background:#2F3D59" data-id=${valores.dni}>${valores.nombres} </p>`;
+			});
+			$('#iddivemisor').show();
+			$('#iddivemisor').html(htmldiv);
+
+		}
+	});
+
+});
+
+$('#iddivemisor').on('click','p',function(){
+	const id=$(this).data('id');
+	const nombre=$(this).text();	
+	$('#DEmisor').val('');
+	$('#Emisor').val('');
+	$('#DEmisor').val(nombre);
+	$('#Emisor').val(id);
+	$('#iddivemisor').hide();	
+
+});
+
+
+$('#DEmisorE').on('keyup',function(){
+	const valor=$(this).val();
+	$.ajax({
+		type:'POST',
+		url:'/documents/searchemisordoc',
+		data:{'valor':valor},
+		success:function(response){
+			var htmldiv='';
+			$.each(response.datos,function(index,valores){
+				htmldiv+=`<p style="cursor: pointer;background:#2F3D59" data-id=${valores.dni}>${valores.nombres} </p>`;
+			});
+			$('#iddivemisorE').show();
+			$('#iddivemisorE').html(htmldiv);
+
+		}
+	});
+
+});
+
+$('#iddivemisorE').on('click','p',function(){
+	const id=$(this).data('id');
+	const nombre=$(this).text();	
+	$('#DEmisorE').val('');
+	$('#EmisorE').val('');
+	$('#DEmisorE').val(nombre);
+	$('#EmisorE').val(id);
+	$('#iddivemisorE').hide();	
+
+});
+
+
+
+$('#destinoEV').on('keyup',function(){
+	const valor=$(this).val();
+	$.ajax({
+		type:'POST',
+		url:'/documents/searchkey',
+		data:{'valor':valor},
+		success:function(response){
+			var htmldiv='';
+			$.each(response.oficinas,function(index,valores){
+				htmldiv+=`<p style="cursor: pointer;background:#2F3D59" data-id=${valores.id}>${valores.nombre} </p>`;
+			});
+			$('#iddivdestinoE').show();
+			$('#iddivdestinoE').html(htmldiv);
+		}
+	});
+
+});
+
+$('#iddivdestinoE').on('click','p',function(){
+	const id=$(this).data('id');
+	const nombre=$(this).text();	
+	$('#destinoEV').val('');
+	$('#destinoE').val('');
+	$('#destinoEV').val(nombre);
+	$('#destinoE').val(id);
+	$('#iddivdestinoE').hide();	
+
+});
+
+$('#btnsaveedit').on('click',function(){
+
+	const formData=new FormData($('#formulariodocumento')[0]);
+	
+
+	idusuario=$('#usuario_id').val()
+	oficina=$('#oficina').val()
+	//recuperando los documentos de referencia...
+	iddocreferencia=$('#inputdocreferencia').data('iddocreferencia');
+	idmovimientoreferencia=$('#inputdocreferencia').data('idmovimientoreferencia');
+	
+
+	formData.append('refiddoc',iddocreferencia);
+	formData.append('refidmov',idmovimientoreferencia);
+
+	$.ajax({
+		url:'/documents/saveupdatedocumento',
+		type:'POST',
+		data:formData,
+		contentType:false,
+		processData:false,
+		success: function(response){
+
+			if (response==1){
+				mostrarMensaje('success','Exitoso!');
+				setTimeout(function(){location.reload(true);},1000);
+
+			}
+			else{
+				mostrarMensaje('error','Ocurrio Algo!');
+				setTimeout(function(){location.reload(true);},1000);
+			}
+
+		}
+	});
+
+});
 
 
 });
 
 	function obtenerClasePrioridad(nombrePrioridad) {
     	switch (nombrePrioridad) {
-        case 'Inmediata': return 'prioridad-inmediata';
-        case 'Alta': return 'prioridad-alta';
-        case 'Media': return 'prioridad-media';
-        case 'Baja': return 'prioridad-baja';
-        case 'Muy Baja': return 'prioridad-muy-baja';
+        case 'URGENTE': return 'prioridad-URGENTE';
+        case 'NORMAL': return 'prioridad-NORMAL';
+        case 'BAJO': return 'prioridad-BAJO';        
         default: return '';
     	}
 			}

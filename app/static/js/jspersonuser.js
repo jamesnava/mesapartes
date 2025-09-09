@@ -5,8 +5,7 @@ $(document).ready(function(){
 
 	$('#insertperson').on('click',function(e){
 		e.preventDefault();
-		const formData= new FormData(document.getElementById('formulariopersona'));
-
+		const formData= new FormData(document.getElementById('formulariopersona'));		
 		$.ajax({
 			type:'POST',
 			url:'/puser/insertperson',
@@ -32,6 +31,7 @@ $(document).ready(function(){
 		});
 
 	});
+
 
 	$('.btneditarperson').on('click',function(){
 		const dni=$(this).data('updni');

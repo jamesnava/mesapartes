@@ -57,5 +57,11 @@ class QueryDocumentos():
 		finally:
 			return numero
 
+	def updatetable(self,con,sql,params):
+		cursor=con.cursor()
+		cursor.execute(sql,params)
+		
+		
+
 
 		

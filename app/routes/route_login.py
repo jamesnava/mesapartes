@@ -27,10 +27,11 @@ def inicio():
 		usuario=form.usuario.data
 		clave=form.clave.data
 		recordar=form.recordar.data
-		sql=f"""SELECT * FROM USUARIO WHERE Nombre_Usuario=?"""
+		sql=f"""SELECT U.Id_Usuario,U.Nombre_Usuario,U.Contrasena,U.Id_Oficina,U.Estado,O.nombre_oficina FROM USUARIO
+	 		AS U INNER JOIN Oficina AS O ON U.Id_Oficina=O.Id_Oficina WHERE U.Nombre_Usuario=?"""
 		obj_query=QueryL()		
 		user=obj_query.cargarUsuario(sql,(usuario,))
-		print(user)
+				
 		if user:
 			if  user.estado=='ACTIVO':
 				if  (user and check_password_hash(user.password,clave)):

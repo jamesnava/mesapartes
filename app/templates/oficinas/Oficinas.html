@@ -2,21 +2,28 @@
 {%block info%}
 <input id="usuario_id" type="hidden" value="{{info.dni}}"/>
 <input id="oficina" type="hidden" value="{{info.oficina}}"/>
-<h6>
+<p class="m-2">
     Usuario:
-</h6>
-<span>
-    {{info.usuario}}
-</span>
+    <em>
+        {{info.usuario}}
+    </em>
+</p>
+<p class="m-2">
+    Oficina:
+    <span>
+        {{info.nombreo}}
+    </span>
+</p>
 {%endblock%}
 
 {%block content%}
 <div>
     <div class="titulomodulo">
         <button class="btn btn-success" id="addbuttonoficina">
-            <i class="fa fa-plus" title="Agregar">
+            <i class="fas fa-plus" title="Agregar">
             </i>
         </button>
+        <input class="m-4" name="" placeholder="buscar" type="text"/>
     </div>
     <div class="contenedorgeneralHistorial">
         <table class="table table-striped mt-3">
@@ -32,6 +39,9 @@
                         codigo Padre
                     </th>
                     <th>
+                        Oficina Padre
+                    </th>
+                    <th>
                         Acciones
                     </th>
                 </tr>
@@ -40,15 +50,19 @@
                 {%for val in rows%}
                 <tr>
                     <td>
-                        {{val.Id_Oficina}}
+                        {{val.CHIJO}}
                     </td>
                     <td>
-                        {{val.nombre_oficina}}
+                        {{val.OHIJO}}
                     </td>
                     <td>
+                        {{val.CPADRE}}
                     </td>
                     <td>
-                        <button class="btn btn-primary upbtnoficina" data-codigo="{{val.Id_Oficina}}">
+                        {{val.OPADRE}}
+                    </td>
+                    <td>
+                        <button class="btn btn-primary upbtnoficina" data-codigo="{{val.CHIJO}}">
                             <i class="fas fa-pencil-square-o" title="Editar">
                             </i>
                         </button>

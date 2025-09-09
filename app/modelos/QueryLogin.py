@@ -5,6 +5,7 @@ class QueryL(object):
 
 	def cargarUsuario(self,query,params):
 		rows=[]
+
 		try:
 			#obj_user=User()
 			
@@ -17,6 +18,6 @@ class QueryL(object):
 
 		finally:
 			if rows:
-				return User(rows[0],rows[1],rows[2],rows[3],rows[5])
+				return User(rows[0],rows[1],rows[2],rows[3],rows[4],rows[5])
 			else:
 				return None

@@ -32,17 +32,23 @@
         </div>
         <div class="info" style="font-style: italic;">
             {%block info%}
-            <h6>
+            <p class="m-2">
                 Usuario:
-            </h6>
-            <h6>
-                <span>
+                <em>
                     {{usuario}}
+                </em>
+            </p>
+            <p class="m-2">
+                Oficina:
+                <span>
+                    {{oficina}}
                 </span>
-            </h6>
-            <a href="#" id="linkchangeclave" style="font-size: 12px; margin-left:10px;text-decoration: underline !important;color: white !important;">
-                Cambiar clave
-            </a>
+            </p>
+            <p class="m-2">
+                <a href="#" id="linkchangeclave" style="font-size: 12px; margin-left:10px;text-decoration: underline !important;color: white !important;">
+                    Cambiar clave
+                </a>
+            </p>
             {%endblock%}
         </div>
         <main style="margin-left: 3%;">
@@ -126,19 +132,42 @@
                     <div class="col-md-3">
                         <div class="card shadow-sm border-0 h-100">
                             <div class="card-body text-center">
-                                <div class="mb-2">
-                                    <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 2.5rem;">
-                                    </i>
-                                </div>
                                 <h5 class="card-title fw-bold">
-                                    Anulados
+                                    Prioridades
                                 </h5>
-                                <p class="display-6 text-danger">
-                                    {{ vencidos }}
-                                </p>
-                                <p class="text-muted small">
-                                    Documentos Anulados
-                                </p>
+                                <div class="rounded overflow-hidden">
+                                    <table class="table">
+                                        <thead class="table table-secondary">
+                                            <tr>
+                                                <td class="text-center">
+                                                    Prioridad
+                                                </td>
+                                                <td class="text-center">
+                                                    Dias Atencion
+                                                </td>
+                                                <td class="text-center">
+                                                    Color
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {%for val in prioridades%}
+                                            <tr>
+                                                <td class="text-center">
+                                                    {{val.Nombre_Prioridad}}
+                                                </td>
+                                                <td class="text-center">
+                                                    {{val.Dias_Atender}}
+                                                </td>
+                                                <td class="text-center">
+                                                    <i aria-hidden="true" class="fa fa-circle" style="color:{{val.Color}} ">
+                                                    </i>
+                                                </td>
+                                            </tr>
+                                            {%endfor%}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -204,7 +233,7 @@
                 {%endif%}
                 {%if 'REPORTE' in permisos%}
                 <li>
-                    <a href="#">
+                    <a href="{{url_for('reports.reporteMain')}}">
                         <i class="fa fa-chart-bar fa-2x">
                         </i>
                         <span class="nav-text">
@@ -240,7 +269,7 @@
         <footer class="footermain">
             <span>
                 <em>
-                    2025 Hospital Sub Regional de Andahuaylas. Desarrollado by Jaime Navarro Cruz ©Todos los derechos reservados.
+                    2025 Hospital Sub Regional de Andahuaylas. Desarrollado por Jaime Navarro Cruz ©Todos los derechos reservados.
                 </em>
             </span>
         </footer>
