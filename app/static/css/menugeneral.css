@@ -179,11 +179,6 @@ margin: 0;
 }
 
 
-
-
-
-
-
 .contenedorgeneralH{ 
   display: flex;
   background-color: lightgray;   
@@ -427,6 +422,14 @@ ul.flashes li.success {
   margin-bottom: 15px;
 
 
+}
+
+.contenedorReporte{
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 2% 7%;
 }
 
 fieldset {

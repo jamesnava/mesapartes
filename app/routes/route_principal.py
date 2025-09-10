@@ -30,7 +30,7 @@ def principal():
 	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad = TP.Id_TiposPrioridad
 	INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento
 	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen = O.Id_Oficina
-	INNER JOIN Adjunto AS A ON D.Id_Adjunto = A.Id_Adjunto
+	LEFT JOIN Adjunto AS A ON D.Id_Adjunto = A.Id_Adjunto
 	WHERE M.fila = 1 AND M.Tipo_Flujo = 'Egreso'  AND M.Id_Oficina_Destino = ?  AND D.Estado IN (1, 3);
 	"""
 	params=(current_user.id_oficina)	
@@ -40,14 +40,14 @@ def principal():
 	sql_P_Atencion="""WITH UltimosMovimientos AS (
   	SELECT *,
          ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila
-  	FROM MOVIMIENTO WHERE Tipo_Flujo =? AND Id_Oficina_Destino = ?)
+  	FROM MOVIMIENTO)
 
 	SELECT COUNT(M.Id_Movimiento) AS pendientes
 	FROM UltimosMovimientos M
 	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento INNER JOIN PERSONA AS P ON D.Emisor=P.Dni
 	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento
-	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina INNER JOIN Adjunto AS A ON D.Id_Adjunto=A.Id_Adjunto
-	WHERE M.fila = 1 AND D.Estado IN (?,?);"""
+	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina LEFT JOIN Adjunto AS A ON D.Id_Adjunto=A.Id_Adjunto
+	WHERE M.fila = 1 AND D.Estado IN (?,?) AND Tipo_Flujo =? AND Id_Oficina_Destino = ?;"""
 
 	#observados
 	sql_observado="""WITH ULTIMOSMOVIMIENTOS AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento 
@@ -60,7 +60,7 @@ def principal():
 					
 	rows_observados=objConsulta.ConsultaMainDocParams(sql_observado,(4,current_user.id_oficina))
 
-	paramspatencion=('Ingreso',current_user.id_oficina,2,5)
+	paramspatencion=(2,5,'Ingreso',current_user.id_oficina)
 
 	rows_pendientesAtencion=objConsulta.ConsultaMainDocParams(sql_P_Atencion,paramspatencion)
 
@@ -70,7 +70,7 @@ def principal():
 
 
 	pendientesRecepcion=rows[0].pendientes if rows else 0
-	pendientesAtencion=rows_pendientesAtencion[0].pendientes if rows else 0
+	pendientesAtencion=rows_pendientesAtencion[0].pendientes if rows_pendientesAtencion else 0
 	observadosdoc=rows_observados[0].observados if rows_observados else 0
 
 

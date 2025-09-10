@@ -470,6 +470,20 @@ $('#adjunto').on('change', function () {
         }      
     });
 
+$('#adjuntoE').on('change', function () {
+			
+				const maxSizeMB = 2;
+        let archivo = this.files[0];
+        if (!archivo) return;
+
+        // Verifica tamaño
+        if (archivo.size > maxSizeMB * 1024 * 1024) {
+            mostrarMensaje('error', `El archivo supera el límite de ${maxSizeMB}MB.`);
+            $(this).val(''); // Limpiar campo
+            return;
+        }      
+    });
+
 
 
 $('input[name="rfilter"]').on('change',function(){
