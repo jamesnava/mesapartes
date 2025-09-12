@@ -240,8 +240,9 @@ $('#grabardoc').on('click',function(){
 				mostrarMensaje('error','llene los campos ');
 			}
 			else{
-				mostrarMensaje('error','Ocurrio Algo!');
-				location.reload(true);
+				mostrarMensaje('error','Intentò insertar un documento que ya existe!');
+				setTimeout(function(){location.reload(true);},1000);
+				
 			}
 
 		}

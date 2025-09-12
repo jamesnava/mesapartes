@@ -123,43 +123,51 @@ def insertDoc():
 			archivo.save(ruta)			
 		except Exception as e:
 			raise e
+
 	sqlInsertAdjunto="INSERT INTO Adjunto(url_archivo) OUTPUT INSERTED.Id_Adjunto VALUES(?)"
 	if len(nombre_unico)>1:
-		idAdjunto=objConsulta.InsertDataIdentity(sqlInsertAdjunto,(nombre_unico,))	
+		idAdjunto=objConsulta.InsertDataIdentity(sqlInsertAdjunto,(nombre_unico,))
+
 	codigodocumento=0
 	oficinas_codigo=[]
+
+	try:
 	
-	for codOf in codigooficina:
-		numeracion=0
-		numeracion=getnumeracion(idoficinaorigen,tflujo)
-		codigoSeguimiento=codigoseguimiento()		
-		sqlInsert=f"""INSERT INTO DOCUMENTO(Titulo,Id_TipoDocumento,Estado,Prioridad,Fecha_Creacion,CodigoSeguimiento,Contenido,Emisor,
-		Id_Adjunto,Id_Oficina_Origen,Id_Oficina_Destino,Asunto,referencia_id) OUTPUT INSERTED.Id_Documento VALUES(?,?,1,?,CONVERT(DATE,GETDATE()),?,?,?,?,?,?,?,?)"""
-		params=(titulo,tipodocumento,prioridad,codigoSeguimiento,descripcion,emisor,idAdjunto,idoficinaorigen,codOf,asunto,iddocreferencia)
+		for codOf in codigooficina:
+			numeracion=0
+			numeracion=getnumeracion(idoficinaorigen,tflujo)
+			codigoSeguimiento=codigoseguimiento()		
+			sqlInsert=f"""INSERT INTO DOCUMENTO(Titulo,Id_TipoDocumento,Estado,Prioridad,Fecha_Creacion,CodigoSeguimiento,Contenido,Emisor,
+			Id_Adjunto,Id_Oficina_Origen,Id_Oficina_Destino,Asunto,referencia_id) OUTPUT INSERTED.Id_Documento VALUES(?,?,1,?,CONVERT(DATE,GETDATE()),?,?,?,?,?,?,?,?)"""
+			params=(titulo,tipodocumento,prioridad,codigoSeguimiento,descripcion,emisor,idAdjunto,idoficinaorigen,codOf,asunto,iddocreferencia)
 
-		nro_insertdoc=objConsulta.InsertDataIdentity(sqlInsert,params)
+			nro_insertdoc=objConsulta.InsertDataIdentity(sqlInsert,params)
+			if not nro_insertdoc:
+				return jsonify({'movimiento':0})
 
-		codigodocumento=nro_insertdoc
-		sqlInsertMovimiento=f"""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
-		Id_Oficina_Destino,Id_Archivo,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?,?,?)
-		"""
-		paramsMovimiento=(nro_insertdoc,idusuario,1,'',idoficinaorigen,codOf,idAdjunto,0,numeracion,tflujo)
-		nro_movimiento=objConsulta.InsertDataIdentity(sqlInsertMovimiento,paramsMovimiento)
+			codigodocumento=nro_insertdoc
+			sqlInsertMovimiento=f"""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
+			Id_Oficina_Destino,Id_Archivo,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?,?,?)
+			"""
+			paramsMovimiento=(nro_insertdoc,idusuario,1,'',idoficinaorigen,codOf,idAdjunto,0,numeracion,tflujo)
+			nro_movimiento=objConsulta.InsertDataIdentity(sqlInsertMovimiento,paramsMovimiento)
 
-		#llenando la lista de oficinas y seguimiento
-		rows_oficinas_consulta=objConsulta.ConsultaMainDocParams("SELECT * FROM Oficina WHERE Id_Oficina=?",(codOf,))
-		oficinas_codigo.append((rows_oficinas_consulta[0].nombre_oficina,codigoSeguimiento))
+			#llenando la lista de oficinas y seguimiento
+			rows_oficinas_consulta=objConsulta.ConsultaMainDocParams("SELECT * FROM Oficina WHERE Id_Oficina=?",(codOf,))
+			oficinas_codigo.append((rows_oficinas_consulta[0].nombre_oficina,codigoSeguimiento))
 
-	#actualizando datos
-	if len(iddocreferencia)>0:
-		sql_update_doc="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"
-		rows_update=objConsulta.InsertDataGeneral(sql_update_doc,(1002,iddocreferencia))
-		if rows_update==1:
-			rows_update_movi=objConsulta.ConsultaMainDocParams("SELECT * FROM MOVIMIENTO WHERE Id_Movimiento=?",(idmovimientoreferencia,))
-			sqlActualizar=f"""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
-			numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?)"""
-			paramactualizar=(rows_update_movi[0].Id_Documento,idusuario,1002,'Referenciado',current_user.id_oficina,0,0,'Interno')			
-			nro_movi=objConsulta.InsertDataIdentity(sqlActualizar,paramactualizar)
+		#actualizando datos
+		if len(iddocreferencia)>0:
+			sql_update_doc="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"
+			rows_update=objConsulta.InsertDataGeneral(sql_update_doc,(1002,iddocreferencia))
+			if rows_update==1:
+				rows_update_movi=objConsulta.ConsultaMainDocParams("SELECT * FROM MOVIMIENTO WHERE Id_Movimiento=?",(idmovimientoreferencia,))
+				sqlActualizar=f"""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
+				numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?)"""
+				paramactualizar=(rows_update_movi[0].Id_Documento,idusuario,1002,'Referenciado',current_user.id_oficina,0,0,'Interno')			
+				nro_movi=objConsulta.InsertDataIdentity(sqlActualizar,paramactualizar)	
+	except Exception as e:
+		print("holaa")
 
 
 

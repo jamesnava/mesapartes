@@ -47,7 +47,7 @@ def principal():
 	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento INNER JOIN PERSONA AS P ON D.Emisor=P.Dni
 	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento
 	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina LEFT JOIN Adjunto AS A ON D.Id_Adjunto=A.Id_Adjunto
-	WHERE M.fila = 1 AND D.Estado IN (?,?) AND Tipo_Flujo =? AND Id_Oficina_Destino = ?;"""
+	WHERE M.fila = 1 AND M.Tipo_Flujo =? AND M.Id_Oficina_Destino = ? AND D.Estado IN (?,?);"""
 
 	#observados
 	sql_observado="""WITH ULTIMOSMOVIMIENTOS AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento 
@@ -60,9 +60,10 @@ def principal():
 					
 	rows_observados=objConsulta.ConsultaMainDocParams(sql_observado,(4,current_user.id_oficina))
 
-	paramspatencion=(2,5,'Ingreso',current_user.id_oficina)
+	paramspatencion=('Ingreso',current_user.id_oficina,2,5)
 
 	rows_pendientesAtencion=objConsulta.ConsultaMainDocParams(sql_P_Atencion,paramspatencion)
+	print(paramspatencion)
 
 	#consultado la leyenda
 	sql_leyenda="SELECT * FROM Tipos_Prioridad"

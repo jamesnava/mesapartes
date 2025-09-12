@@ -35,9 +35,7 @@ class QueryDocumentos():
 				cursor.commit()
 				
 		except Exception as e:
-			print(e)
-			print(sql)
-			print(params)
+			print(e)			
 		finally:
 			return nuevo_id
 
