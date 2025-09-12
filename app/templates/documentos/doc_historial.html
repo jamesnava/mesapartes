@@ -1,0 +1,87 @@
+{%extends "/start/main.html"%}
+{%block info%}
+{%endblock%}
+
+{%block content%}
+<div>
+    <div class="titulomodulo" style="gap: 10px;">
+        <label>
+            Buscar
+        </label>
+        <input id="txtbuscarhistorial" name="" type="text"/>
+        <label>
+            desde
+        </label>
+        <input id="fechai" name="" type="date"/>
+        <label>
+            hasta
+        </label>
+        <input id="fechaf" name="" type="date"/>
+        <div class="form-check">
+            <input class="form-check-input" id="Ringreso" name="rfilter" type="radio" value="Ingreso"/>
+            <label class="form-check-label" for="Ringreso">
+                Ingreso
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" id="Regreso" name="rfilter" type="radio" value="Egreso"/>
+            <label class="form-check-label" for="Regreso">
+                Egreso
+            </label>
+        </div>
+        <button class="btn btn-success">
+            <i aria-hidden="true" class="fas fa-search" title="Buscar">
+            </i>
+        </button>
+        <button class="btn btn-warning">
+            <i aria-hidden="true" class="fas fa-file-excel" title="Exportar">
+            </i>
+        </button>
+    </div>
+    <div class="contenedorgeneralHistorial">
+        <div class="card mt-4 shadow">
+            <div class="card-header bg-primary text-white contenedordocumento">
+                <h5 class="mb-0">
+                    📜 Historial de Documento
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>
+                                    Numeracion
+                                </th>
+                                <th>
+                                    Titulo
+                                </th>
+                                <th>
+                                    Fecha
+                                </th>
+                                <th>
+                                    Usuario
+                                </th>
+                                <th>
+                                    Oficina E/S
+                                </th>
+                                <th>
+                                    Tipo Flujo
+                                </th>
+                                <th>
+                                    cod. Seguimiento
+                                </th>
+                                <th>
+                                    Detalles
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center" id="tablehistorico">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

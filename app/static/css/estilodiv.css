@@ -1,0 +1,102 @@
+body{
+	background-color: rgba(0, 64, 128, 0.85); /* Azul oscuro con transparencia */
+	color: #ffffff;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+}
+.centrar{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	
+
+}
+
+
+
+.styleadvance{
+	border-radius: 5px;
+	border: 1px solid #000;
+	background: rgba(22,115,138,0.8);
+	padding: 7px;
+
+}
+
+.alturafullscreen{
+	height: 100vh;
+}
+
+.altura50{
+	height: 50vh;
+}
+
+.altura25{
+	height: 25vh;
+}
+
+.ancho25{
+	width: 25vh;
+}
+
+.ancho50{
+	width: 50vh;
+}
+
+
+.form-image img {
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.form-image img:hover {
+    transform: scale(1.05);
+}
+
+.contentloginform {
+    
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px); /* Suaviza el fondo detrás */
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #f0f0f0;
+   
+   
+    
+}
+
+.form-header h2 {
+    font-size: 24px;
+    color: white; /* Azul institucional */
+    margin-bottom: 5px;
+}
+
+.form-header p {
+    font-size: 16px;
+    color: white;
+    margin-top: 0;
+}
+
+.form-control {
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 14px;
+}
+
+input[type="submit"].form-control {
+    background-color: #28a745; /* Verde médico */
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"].form-control:hover {
+    background-color: #218838;
+}
+
