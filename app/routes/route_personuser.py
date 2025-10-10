@@ -12,7 +12,7 @@ puser_bp=Blueprint('puser',__name__,url_prefix='/puser')
 @login_required
 def templateUser():
 	objConsulta=QueryDocumentos()
-	sql="""SELECT P.Nombre,P.ApellidoPaterno,P.ApellidoMaterno,P.Dni,U.Nombre_Usuario,U.Id_Usuario,U.Estado,O.nombre_oficina
+	sql="""SELECT TOP 50 P.Nombre,P.ApellidoPaterno,P.ApellidoMaterno,P.Dni,U.Nombre_Usuario,U.Id_Usuario,U.Estado,O.nombre_oficina
 			FROM USUARIO as U INNER JOIN PERSONA AS P ON U.Dni=P.Dni INNER JOIN Oficina AS O ON U.Id_Oficina=O.Id_Oficina"""
 	rows=objConsulta.ConsultaMainDoc(sql)
 	datos={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina}
@@ -116,6 +116,27 @@ def searchperson():
 	try:
 		rows=objConsulta.ConsultaMainDocParams(sql,params)
 		datos=[{'dni':val.Dni,'nombre':val.Nombre,'apellidop':val.ApellidoPaterno,'apellidom':val.ApellidoMaterno,'email':val.Email,'telefono':val.Telefono,'distrito':val.Distrito,'direccion':val.Direccion} for val in rows]
+		
+	except Exception as e:
+		raise e
+	return jsonify({'datos':datos})
+
+@puser_bp.route('/searchuser',methods=['POST'])
+@requires_permission(Permiso.USUARIO)
+@login_required
+def searchuser():
+	objConsulta=QueryDocumentos()
+	valor=request.form.get('datos')
+
+	sql="""SELECT P.Dni,P.Nombre+' '+P.ApellidoPaterno+' '+P.ApellidoMaterno AS Datos,U.Nombre_Usuario,O.nombre_oficina,U.Estado,U.Id_Usuario
+	 FROM USUARIO U INNER JOIN PERSONA P ON U.Dni=P.Dni 
+	INNER JOIN Oficina O ON U.Id_Oficina=O.Id_Oficina WHERE U.Nombre_Usuario LIKE ? OR P.Nombre LIKE ?"""
+	params=("%"+valor+"%","%"+valor+"%")
+	datos=None
+	try:
+		rows=objConsulta.ConsultaMainDocParams(sql,params)
+		datos=[{'dni':val.Dni,'datos':val.Datos,'usuario':val.Nombre_Usuario,'oficina':val.nombre_oficina,'estado':val.Estado,'idusuario':val.Id_Usuario}
+		 		for val in rows]
 		
 	except Exception as e:
 		raise e

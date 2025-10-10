@@ -106,9 +106,15 @@ def insertDoc():
 	variables=[titulo,asunto,emisor,codigooficina]
 
 	validador=0
+
 	for val in variables:
-		if len(val)==0:
-			validador+=1
+		if val is None:
+			validador += 1
+		elif isinstance(val, str) and len(val.strip()) == 0:
+			validador += 1
+		elif isinstance(val, list) and len(val) == 0:
+			validador += 1
+
 	if validador:
 		return jsonify({'movimiento':-1})
 
@@ -157,7 +163,7 @@ def insertDoc():
 			oficinas_codigo.append((rows_oficinas_consulta[0].nombre_oficina,codigoSeguimiento))
 
 		#actualizando datos
-		if len(iddocreferencia)>0:
+		if iddocreferencia and len(iddocreferencia)>0:
 			sql_update_doc="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"
 			rows_update=objConsulta.InsertDataGeneral(sql_update_doc,(1002,iddocreferencia))
 			if rows_update==1:
@@ -167,10 +173,11 @@ def insertDoc():
 				paramactualizar=(rows_update_movi[0].Id_Documento,idusuario,1002,'Referenciado',current_user.id_oficina,0,0,'Interno')			
 				nro_movi=objConsulta.InsertDataIdentity(sqlActualizar,paramactualizar)	
 	except Exception as e:
-		print("holaa")
+		print(e)
 
 
-
+	if len(codigooficina)>1:
+		return jsonify({'movimiento':nro_movimiento,'direccion':None}) 
 	#generar ticket
 	SQL_DOCUMENTOS="""SELECT  CONCAT(P.Nombre,' ',P.ApellidoPaterno,' ',P.ApellidoMaterno) As emisor,D.Asunto,P.Dni,D.Fecha_Creacion,TD.Nombre_TipoDocumento,TP.Nombre_Prioridad FROM DOCUMENTO AS D INNER JOIN Oficina AS O ON D.Id_Oficina_Destino=O.Id_Oficina INNER JOIN 
 	Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad
@@ -286,8 +293,11 @@ def ingresoDocumento():
 	params=(current_user.id_oficina,)
 	rows=consultaDocumentosEntrada(params)
 	#bloque para llenar la otra tabla
-	params_recepcionados=(2,5,'Ingreso',current_user.id_oficina)
-	rows_recepcionadas=ConsultaDocumentos(params_recepcionados)	
+	#params_recepcionados=(2,5,'Ingreso',current_user.id_oficina)
+	params_recepcionados=('Interno','Ingreso',2,5,current_user.id_oficina)
+	rows_recepcionadas=ConsultaDocumentos(params_recepcionados)		
+	for val in rows_recepcionadas:
+		print(val.Titulo)
 	return render_template('/documentos/doc_ingreso.html',datos=rows,datos_recepcion=rows_recepcionadas,info={'usuario':current_user.username,'dni':current_user.id,'oficina':current_user.id_oficina})
 
 @documento_bp.route('/docseg')
@@ -302,10 +312,6 @@ def segDocumento():
 def followS():
 	objConsulta=QueryDocumentos()
 	codigo=request.form.get('codigo')
-	#sql="""SELECT M.Fecha_Movimiento,A.Nombre_Accion,M.Id_Oficina_Origen,M.Id_Oficina_Destino,U.Nombre_Usuario,M.comentarios FROM MOVIMIENTO AS M INNER JOIN DOCUMENTO AS D ON M.Id_Documento=D.Id_Documento INNER JOIN ACCIONES
-	#AS A ON M.Id_Accion=A.Id_Accion INNER JOIN Estado_Doc AS E ON D.Estado=E.Id_EstadoDoc
-	#INNER JOIN USUARIO AS U ON M.Id_Usuario=U.Id_Usuario WHERE D.CodigoSeguimiento=? ORDER BY M.Fecha_Movimiento DESC"""
-
 	sql="""WITH RECURSIVO AS (
     -- Arranca del documento con el CodigoSeguimiento que consultaste
     SELECT 
@@ -315,9 +321,7 @@ def followS():
         1 AS Nivel
     FROM DOCUMENTO D
     WHERE D.CodigoSeguimiento =?
-
     UNION ALL
-
     -- Trae los documentos que referencian al anterior
     SELECT 
         H.Id_Documento,
@@ -422,14 +426,14 @@ def actualizacionaccion():
 	accion=request.form.get('accion')
 	comentario=request.form.get('comentario')
 	idmovimiento=request.form.get('idmovimiento')
-	codigoOficina=request.form.get('codigoOf')
+	codigoOficina=request.form.getlist('codigoOf[]')
 	sql="""SELECT * FROM MOVIMIENTO WHERE Id_Movimiento=?"""
+
 	rows_Anterior=objConsulta.ConsultaMainDocParams(sql,(idmovimiento,))
 
 	#insertar accion
 	sql_insertar="""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
-	Id_Oficina_Destino,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento
-	VALUES(?,?,GETDATE(),?,?,?,?,?,?,?)"""
+	Id_Oficina_Destino,numeroIngreso,numeroEgreso,Tipo_Flujo) VALUES(?,?,GETDATE(),?,?,?,?,?,?,?)"""
 	#(accion,estado)
 	pares=[(1,1),(2,2),(3,3),(4,4),(5,5),(7,6),(8,7),(12,7)]
 	selected=None
@@ -438,37 +442,70 @@ def actualizacionaccion():
 			selected=index
 			break			
 
-	params=None	
-
+	
+	indicador=0	
 	if selected!=None:
+		
 		if int(accion)==3:
-			#verificamos
-			sql=sql_check = """ SELECT TOP 1 Id_Movimiento FROM MOVIMIENTO WHERE Id_Documento = ? AND Id_Usuario = ? AND Id_Accion = ? AND Id_Oficina_Origen = ?
-     		AND Id_Oficina_Destino = ? AND Tipo_Flujo = ?  AND Fecha_Movimiento >= DATEADD(SECOND, -3, GETDATE())"""
+			try:				
+				with Conexion() as con:
+					try:
+						params=None
+						numeracion=0
+						numeracion=getnumeracion(current_user.id_oficina,'Egreso')					
+						for val in codigoOficina:
+														
+							#verificamos
+							sql_check = """ SELECT TOP 1 Id_Movimiento FROM MOVIMIENTO WHERE Id_Documento = ? AND Id_Usuario = ? AND Id_Accion = ? AND Id_Oficina_Origen = ?
+     						AND Id_Oficina_Destino = ? AND Tipo_Flujo = ?  AND Fecha_Movimiento >= DATEADD(SECOND, -3, GETDATE())"""
+	
+							params_check = (rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],current_user.id_oficina,val,'Egreso')
+							existe = objConsulta.ConsultaMainDocParamsCon(con,sql_check, params_check)								
+							if existe:
+								continue													
+							params=(rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,val,0,numeracion,'Egreso')
+							
+							#insertar
+							objConsulta.updatetable(con,sql_insertar,params)
+	
+							#actualizar
+						#sql_documento="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"						
+						#parametros=(pares[selected][1],rows_Anterior[0].Id_Documento)							
+						#objConsulta.updatetable(con,sql_documento,parametros)
+						con.commit()
+						indicador=1						
+					except Exception as e:
+						print(e)
+						con.rollback()
+						indicador=0		
+			except Exception as e:
+				print(e)
+				indicador=0
 
-			params_check = (rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],current_user.id_oficina,codigoOficina,'Egreso')
-			existe = objConsulta.ConsultaMainDocParams(sql_check, params_check)	
-			if existe:
-				return jsonify(0)
-			numeracion=0
-			numeracion=getnumeracion(current_user.id_oficina,'Egreso')	
-
-						
-			params=(rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,codigoOficina,0,numeracion,'Egreso')
 
 		elif int(accion)==4:
+			sql_insert4="""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
+			Id_Oficina_Destino,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?,?)"""
 			for val in rows_Anterior:
 				params=(val.Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,val.Id_Oficina_Origen,0,0,'Interno')
-		elif int(accion) in (7,8,12):			
-			params=(rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,None,0,0,'Interno')
 
+			idmovimiento=objConsulta.InsertDataIdentity(sql_insert4,params)			
+			if idmovimiento:
+				sql_documento="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"
+				parametros=(pares[selected][1],rows_Anterior[0].Id_Documento)
+				indicador=objConsulta.InsertDataGeneral(sql_documento,parametros)
+		elif int(accion) in (7,12):
+						
+			params=(rows_Anterior[0].Id_Documento,current_user.id,pares[selected][0],comentario,current_user.id_oficina,None,0,0,'Interno')
+			sql_insert5="""INSERT INTO MOVIMIENTO(Id_Documento,Id_Usuario,Fecha_Movimiento,Id_Accion,comentarios,Id_Oficina_Origen,
+			Id_Oficina_Destino,numeroIngreso,numeroEgreso,Tipo_Flujo) OUTPUT INSERTED.Id_Movimiento VALUES(?,?,GETDATE(),?,?,?,?,?,?,?)"""
+
+			idmovimiento=objConsulta.InsertDataIdentity(sql_insert5,params)	
+			if idmovimiento:
+				sql_documento="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"
+				parametros=(pares[selected][1],rows_Anterior[0].Id_Documento)
+				indicador=objConsulta.InsertDataGeneral(sql_documento,parametros)	
 	
-	idmovimiento=objConsulta.InsertDataIdentity(sql_insertar,params)
-	indicador=0
-	if idmovimiento:
-		sql_documento="UPDATE DOCUMENTO SET Estado=? WHERE Id_Documento=?"
-		parametros=(pares[selected][1],rows_Anterior[0].Id_Documento)
-		indicador=objConsulta.InsertDataGeneral(sql_documento,parametros)
 
 	return jsonify(indicador)
 
@@ -480,13 +517,13 @@ def salidasdoc():
 	objConsulta=QueryDocumentos()
 	sql="""WITH UltimosMovimientos AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila FROM MOVIMIENTO)
 	SELECT 
-    FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
+    FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,D.CodigoSeguimiento,
     CONCAT(P.Nombre, ' ', P.ApellidoPaterno, ' ', P.ApellidoMaterno) AS NEmisor,TD.Nombre_TipoDocumento,D.Asunto,O.nombre_oficina,
     TP.Nombre_Prioridad,A.url_archivo,D.Titulo,M.Id_Movimiento,ED.Nombre_estado FROM UltimosMovimientos M INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento
 	INNER JOIN PERSONA P ON D.Emisor = P.Dni INNER JOIN Tipos_Prioridad TP ON D.Prioridad = TP.Id_TiposPrioridad
 	INNER JOIN Tipo_Documento TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento INNER JOIN Oficina O ON M.Id_Oficina_Destino = O.Id_Oficina
 	LEFT JOIN Adjunto A ON D.Id_Adjunto = A.Id_Adjunto INNER JOIN Estado_Doc AS ED ON D.Estado=ED.Id_EstadoDoc WHERE M.fila = 1 AND M.Id_Oficina_Origen = ?
-	AND D.Estado = ?"""
+	AND M.Id_Accion = ?"""
 	rows_resultados=objConsulta.ConsultaMainDocParams(sql,(current_user.id_oficina,3))
 
 
@@ -682,7 +719,7 @@ def searchDocuments():
 		datos=[{'fecha':val.FechaFormateada,'titulo':val.Titulo,'nameemisor':val.NEmisor,'url':val.url_archivo,'tipodoc':val.Nombre_TipoDocumento,'asunto':val.Asunto,'oficina':val.nombre_oficina,'nombreprioridad':val.Nombre_Prioridad,'idmovimiento':val.Id_Movimiento} for val in rows]
 	
 	elif tipo=='RECEPCIONADOS':		
-		sql_="""WITH UltimosMovimientos AS (	SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila
+		sql_="""WITH UltimosMovimientos AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila
   		FROM MOVIMIENTO)
 
 		SELECT FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
@@ -692,8 +729,8 @@ def searchDocuments():
 		INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento INNER JOIN PERSONA AS P ON D.Emisor=P.Dni
 		INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento
 		INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina LEFT JOIN Adjunto AS A ON D.Id_Adjunto=A.Id_Adjunto
-		WHERE M.fila = 1 AND M.Tipo_Flujo =? AND M.Id_Oficina_Destino = ? AND D.Estado IN (?,?) AND D.Titulo LIKE ?"""
-		parametros=('Ingreso',current_user.id_oficina,2,5,'%'+valor+'%')
+		WHERE M.fila = 1 AND M.Tipo_Flujo IN (?,?) AND M.Id_Oficina_Destino = ? AND D.Estado IN (?,?) AND D.Titulo LIKE ?"""
+		parametros=('Ingreso','Interno',current_user.id_oficina,2,5,'%'+valor+'%')
 		rowsresult=objConsulta.ConsultaMainDocParams(sql_,parametros)
 		datos=[{'fecha':val.FechaFormateada,'codseg':val.CodigoSeguimiento,'titulo':val.Titulo,'nameemisor':val.NEmisor,'url':val.url_archivo,'tipodoc':val.Nombre_TipoDocumento,'asunto':val.Asunto,'oficina':val.nombre_oficina,'nombreprioridad':val.Nombre_Prioridad,'idmovimiento':val.Id_Movimiento} for val in rowsresult]	
 
@@ -943,28 +980,58 @@ def codigoseguimiento():
 	return codigo
 
 def ConsultaDocumentos(params):
-	objConsulta=QueryDocumentos()
-	sql="""WITH UltimosMovimientos AS (
-  	SELECT *,
-         ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila
-  	FROM MOVIMIENTO)
+	objConsulta=QueryDocumentos()	
 
-	SELECT FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
-	CONCAT(P.Nombre,' ',P.ApellidoPaterno,' ',P.ApellidoMaterno) AS NEmisor,TD.Nombre_TipoDocumento,
-	D.Asunto,O.nombre_oficina,TP.Nombre_Prioridad,A.url_archivo,D.Titulo,M.Id_Movimiento,D.CodigoSeguimiento
-	FROM UltimosMovimientos M
-	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento INNER JOIN PERSONA AS P ON D.Emisor=P.Dni
-	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento
-	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina LEFT JOIN Adjunto AS A ON D.Id_Adjunto=A.Id_Adjunto
-	WHERE M.fila = 1 AND D.Estado IN (?,?) AND M.Tipo_Flujo =? AND M.Id_Oficina_Destino = ? ORDER BY M.Fecha_Movimiento DESC;"""
+	sql="""WITH UltimosMovimientos AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY Id_Documento, Id_Oficina_Destino
+               ORDER BY Fecha_Movimiento DESC
+           ) AS fila
+    FROM MOVIMIENTO
+    WHERE Tipo_Flujo IN (?,?)  -- solo movimientos de ingreso
+)
+SELECT 
+    FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
+    CONCAT(P.Nombre, ' ', P.ApellidoPaterno, ' ', P.ApellidoMaterno) AS NEmisor,
+    TD.Nombre_TipoDocumento, D.Asunto, O.nombre_oficina,TP.Nombre_Prioridad,
+    A.url_archivo, D.Titulo, D.CodigoSeguimiento, M.Id_Movimiento FROM UltimosMovimientos M
+	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento
+	INNER JOIN PERSONA P ON D.Emisor = P.Dni
+	INNER JOIN Tipos_Prioridad TP ON D.Prioridad = TP.Id_TiposPrioridad
+	INNER JOIN Tipo_Documento TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento
+	INNER JOIN Oficina O ON M.Id_Oficina_Origen = O.Id_Oficina
+	LEFT JOIN Adjunto A ON D.Id_Adjunto = A.Id_Adjunto
+	WHERE M.fila = 1  AND M.Id_Accion IN (?,?)             -- pendiente de atención (recepcionado o derivado)
+  	AND M.Id_Oficina_Destino =?         -- oficina actual
+  	AND NOT EXISTS (
+  	 SELECT 1
+    FROM MOVIMIENTO M2
+    WHERE M2.Id_Documento = M.Id_Documento
+      AND M2.Fecha_Movimiento > M.Fecha_Movimiento
+      AND (
+          M2.Id_Oficina_Origen = M.Id_Oficina_Destino -- ya salió de la oficina
+          OR (M2.Id_Accion = 7 AND M2.Id_Oficina_Origen = M.Id_Oficina_Destino) -- archivado en esta oficina
+      )                      
+      
+  )
+ORDER BY M.Fecha_Movimiento DESC;"""
+
 	rows=objConsulta.ConsultaMainDocParams(sql,params)
 	return rows
 
 def consultaDocumentosEntrada(params):
 	objConsulta=QueryDocumentos()
-	sql="""WITH UltimosMovimientos AS ( SELECT *,ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila
-    FROM MOVIMIENTO)
-	SELECT FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
+	sql="""
+		WITH UltimosMovimientos AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY Id_Documento, Id_Oficina_Destino
+               ORDER BY Fecha_Movimiento DESC
+           ) AS fila
+    FROM MOVIMIENTO
+)
+SELECT FORMAT(M.Fecha_Movimiento, 'yyyy-MM-dd HH:mm') AS FechaFormateada,
        CONCAT(P.Nombre, ' ', P.ApellidoPaterno, ' ', P.ApellidoMaterno) AS NEmisor,
        TD.Nombre_TipoDocumento,
        D.Asunto,
@@ -973,14 +1040,28 @@ def consultaDocumentosEntrada(params):
        A.url_archivo,
        D.Titulo,
        M.Id_Movimiento
-	FROM UltimosMovimientos M
-	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento
-	INNER JOIN PERSONA AS P ON D.Emisor = P.Dni
-	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad = TP.Id_TiposPrioridad
-	INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento
-	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen = O.Id_Oficina
-	LEFT JOIN Adjunto AS A ON D.Id_Adjunto = A.Id_Adjunto
-	WHERE M.fila = 1 AND M.Tipo_Flujo = 'Egreso'  AND M.Id_Oficina_Destino = ?  AND D.Estado IN (1, 3) ORDER BY M.Fecha_Movimiento DESC"""
+FROM UltimosMovimientos M
+INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento
+INNER JOIN PERSONA AS P ON D.Emisor = P.Dni
+INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad = TP.Id_TiposPrioridad
+INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento
+INNER JOIN Oficina AS O ON M.Id_Oficina_Origen = O.Id_Oficina
+LEFT JOIN Adjunto AS A ON D.Id_Adjunto = A.Id_Adjunto
+WHERE M.fila = 1
+  AND M.Tipo_Flujo = 'Egreso'
+  AND M.Id_Oficina_Destino = ?          -- tu parámetro
+  AND M.Id_Accion IN (1,3)              -- pendiente (registrado o derivado)
+  AND NOT EXISTS (                       -- <--- filtra anulados
+      SELECT 1 
+      FROM MOVIMIENTO M2
+      WHERE M2.Id_Documento = M.Id_Documento
+        AND M2.Id_Accion = 12
+        AND M2.Fecha_Movimiento > M.Fecha_Movimiento
+  )
+ORDER BY M.Fecha_Movimiento DESC;
+	"""
+	
+	
 	rows=objConsulta.ConsultaMainDocParams(sql,params)
 	return rows
 

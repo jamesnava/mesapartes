@@ -113,7 +113,7 @@
                         <thead class="table-light text-center">
                             <tr>
                                 <th>
-                                    Código
+                                    Código Seguimiento
                                 </th>
                                 <th>
                                     Asunto
@@ -125,9 +125,6 @@
                                     Fecha
                                 </th>
                                 <th>
-                                    Estado
-                                </th>
-                                <th>
                                     Acción
                                 </th>
                             </tr>
@@ -136,6 +133,7 @@
                             {%for val in datos%}
                             <tr>
                                 <td>
+                                    {{val.CodigoSeguimiento}}
                                 </td>
                                 <td>
                                     {{val.Asunto}}
@@ -145,9 +143,6 @@
                                 </td>
                                 <td>
                                     {{val.FechaFormateada}}
-                                </td>
-                                <td>
-                                    {{val.Nombre_estado}}
                                 </td>
                                 <td>
                                     <button class="btn btn-danger salidadoc" data-idmovimientoderivado="{{val.Id_Movimiento}}" type="button">
@@ -318,13 +313,5 @@
             </div>
         </div>
     </div>
-    <!--
-    <div class="titulomodulo">
-        <a class="btn btn-success" href="{{url_for('documents.documentosGenerate')}}">
-            <i aria-hidden="true" class="fas fa-arrow-right" title="Documentos Generados">
-            </i>
-        </a>
-    </div>
--->
 </div>
 {%endblock%}

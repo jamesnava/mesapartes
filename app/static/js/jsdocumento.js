@@ -100,11 +100,13 @@ $('#iddivdestino').on('click','p',function(){
 	</tr>`
 
 	$('#tableoficinas tbody').append(nuevafila);
-	$('#iddivdestino').hide()
+	$('#iddivdestino').hide();
 	$('#destino').val("");
 }
 else{
 	mostrarMensaje('warning', 'Esta oficina ya ha sido agregada');
+	$('#iddivdestino').hide();
+	$('#destino').val("");
 }
 });
 
@@ -140,11 +142,15 @@ $('#iddivdestinoD').on('click','p',function(){
 
 // Verificar si ya existe alguna fila en la tabla
 	const totalFilas = $('#tableoficinasD tbody tr').length;
-
-	if (totalFilas > 0) {
-  	mostrarMensaje('warning', 'Solo puedes agregar una oficina destino');
-  	return;
-							}
+	//duplicados
+	let duplicado=false;
+	$('#tableoficinasD tbody tr').each(function(){
+		const Actual=$(this).find('td:first').text();
+		if(Actual==id){
+			duplicado=true;
+			return false;
+		}
+	});
 
 // Si no hay filas, agregamos la nueva
 	const nuevafila = `<tr>
@@ -153,9 +159,20 @@ $('#iddivdestinoD').on('click','p',function(){
   <td><button class="btn btn-sm btn-danger quitaroficina">Quitar</button></td>
 	</tr>`;
 
-	$('#tableoficinasD tbody').append(nuevafila);
-	$('#iddivdestinoD').hide();
-	$('#oficinaDestino').val("");
+	if (!duplicado){
+		$('#tableoficinasD tbody').append(nuevafila);
+		$('#iddivdestinoD').hide();
+		$('#oficinaDestino').val("");
+	}	
+	else{
+		mostrarMensaje('warning','El destino ya fue agregado!');
+		$('#iddivdestinoD').hide();
+		$('#oficinaDestino').val("");
+	}
+
+
+
+
 });
 
 
@@ -227,13 +244,18 @@ $('#grabardoc').on('click',function(){
 
 			if (response.movimiento!=0 && response.movimiento!=-1){
 				mostrarMensaje('success','Exitoso!');
-				
+
+				if(response.direccion){ 		
 				//mostrar div de impresion
 				$('#verconstancia').attr('src',response.direccion);
 				$('#constancia').modal('show');
 				$('#constancia').on('hidden.bs.modal', function () {
   					location.reload(true);
 				});
+				}	
+
+				else{setTimeout(function(){location.reload(true);},1000);}
+				
 
 			}
 			else if(response.movimiento==-1){
@@ -318,16 +340,24 @@ $('.recepcionardoc').on('click',function(){
 
 
 $('#btnConfirmarAccion').on('click',function(){
+	
 	accion=$('#tipoAccion').val();
 	comentario=$('#comentarioAccion').val();
 	idmovimiento=$('#idmovi').val();
+	
+	var codigosoficina=[]
+	$('#tableoficinasD tbody tr').each(function(index,fila){
+		codigosoficina.push($(fila).find('td:eq(0)').text().trim());
+	})	
 
-	const codigo = $('#tableoficinasD tbody tr:first td:first').text();
+	//const codigo = $('#tableoficinasD tbody tr:first td:first').text();
+
 	$.ajax({
 			url:'/documents/confirmaraccion',
 			type:'POST',
-			data:{'accion':accion,'comentario':comentario,'idmovimiento':idmovimiento,'codigoOf':codigo},
+			data:{'accion':accion,'comentario':comentario,'idmovimiento':idmovimiento,'codigoOf':codigosoficina},
 			success:function(response){
+				
 				if (response==1)
 				setTimeout(function(){location.reload(true);},1000);
 			}
@@ -548,6 +578,13 @@ $.ajax({
 					<i aria-hidden="true" class="fas fa-circle ${colorprioridad}
 					  title="${valores.nombreprioridad}">
              </i>
+             <p class="${colorprioridad}" style="font-size: 11px;">
+                <em>
+                  <strong>
+                      ${valores.nombreprioridad}
+                  </strong>
+                </em>
+              </p>
 					</td>
 					<td>
 						<button class="btn btn-primary ver-pdf" data-url="${valores.url}" type="button">
@@ -594,6 +631,13 @@ $.ajax({
 					<i aria-hidden="true" class="fas fa-circle ${colorprioridad}
 					  title="${valores.nombreprioridad}">
              </i>
+             <p class="${colorprioridad}" style="font-size: 11px;">
+                <em>
+                  <strong>
+                      ${valores.nombreprioridad}
+                  </strong>
+                </em>
+              </p>
 					</td>
 					<td>${valores.codseg}</td>
 					<td>
@@ -680,7 +724,7 @@ $('#tablaBandejarecepcionados').on('click','.acciones',function(){
 	$('#veracciones').modal('show');
 });
 
-
+/*
 $('#veracciones').on('click','#btnConfirmarAccion',function(){
 	accion=$('#tipoAccion').val();
 	comentario=$('#comentarioAccion').val();
@@ -696,7 +740,7 @@ $('#veracciones').on('click','#btnConfirmarAccion',function(){
 			}
 	});
 
-});
+});*/
 
 $('#buscarobservados').on('keyup',function(){
 	let valor=$(this).val();

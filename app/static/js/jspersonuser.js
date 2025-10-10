@@ -174,6 +174,48 @@ $(document).ready(function(){
 
 	});
 
+	$('#buscarusertxt').on('keyup',function(){
+		const valor=$(this).val();
+		
+		$.ajax({
+			type:'POST',
+			url:'/puser/searchuser',
+			data:{'datos':valor},
+			success:function(response){
+				$('#tableusers').empty();				
+				$.each(response.datos,function(index,valores){
+
+					$('#tableusers').append(`<tr>
+						<td>${valores.dni}</td>
+						<td>${valores.datos}</td>						
+						<td>${valores.usuario}</td>
+						<td>${valores.oficina}</td>
+						<td>${valores.estado}</td>
+						<td>
+																	
+						<button class="btn btn-info btnchangeoficina" data-dni="${valores.dni}">
+                         <i aria-hidden="true" class="fas fa-pencil" title="cambiar oficina"> </i>
+                        </button>
+                        <button class="btn btn-primary btnchangestate" data-dni="${valores.dni}">
+                          <i aria-hidden="true" class="fas fa-toggle-on" title="cambiar estado"> </i>
+                        </button>
+                        <button class="btn btn-success btnchangeclave" data-dni="${valores.dni}">
+                         <i class="fas fa-key" title="Cambiar clave"></i>
+                        </button>
+                        <button class="btn btn-warning btnaddperfiluser" data-dni="${valores.dni}">
+                         <i class="fas fa-window-restore" title="Asignar Pefil"></i>
+                        </button>
+                        </td>
+						</tr>`);
+				});
+
+			}
+
+		});
+
+	});
+
+
 	$('#btninsertuser').on('click',function(){
 		$.ajax({
 			type:'POST',
@@ -307,8 +349,35 @@ $(document).ready(function(){
 
 	});
 
+$('#tableusers').on('click','.btnchangestate',function(){
+		const dni=$(this).data('dni');
+		console.log(dni);
+		$.ajax({
+			url:'/puser/changestate',
+			type:'POST',
+			data:{'dni':dni} ,
+			success:function(response){
+				if (response==1){
+					mostrarMensaje("success","Actualizacion correcta")
+					setTimeout(function(){location.reload(true);},1000);
+				}
+				else{
+					mostrarMensaje("error","error!")
+					setTimeout(function(){location.reload(true);},1000);
+				}
+
+			}
+		});
+
+	});
+
 
 $('.btnchangeoficina').on('click',function(){
+	$('#modalchangeoficina').modal('show');		
+	$('#ofhidden').val($(this).data('dni'));
+});
+
+$('#tableusers').on('click','.btnchangeoficina',function(){
 	$('#modalchangeoficina').modal('show');		
 	$('#ofhidden').val($(this).data('dni'));
 });
@@ -369,6 +438,13 @@ $('.btnchangeclave').on('click',function(){
 	$('#modalchangepassword').modal('show');
 });
 
+$('#tableusers').on('click','.btnchangeclave',function(){
+	let dni=$(this).data('dni');
+	$('#userhiddenclave').val(dni);
+	$('#modalchangepassword').modal('show');
+});
+
+
 $('#grabarupdatepassworduser').on('click',function(){
 	$.ajax({
 		type:'POST',
@@ -389,6 +465,24 @@ $('#grabarupdatepassworduser').on('click',function(){
 });
 
 $('.btnaddperfiluser').on('click',function(){
+	$('#addperfiluser').modal('show');
+	$('#userhiddenperfil').val($(this).data('dni'));
+	$.ajax({
+		type:'POST',
+		url:'/puser/cargarperfil',
+		success:function(response){
+			htmselect=$('#selectperfil');
+			htmselect.empty();
+			$.each(response.datos,function(index,valores){
+				htmselect.append(`<option value=${valores.id}>${valores.nombre}</option>`);
+			});
+
+		}
+	});
+});
+
+
+$('#tableusers').on('click','.btnaddperfiluser',function(){
 	$('#addperfiluser').modal('show');
 	$('#userhiddenperfil').val($(this).data('dni'));
 	$.ajax({

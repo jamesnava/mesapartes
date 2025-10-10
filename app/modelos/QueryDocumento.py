@@ -25,6 +25,20 @@ class QueryDocumentos():
 		finally:
 			return row
 
+	def ConsultaMainDocParamsCon(self,con,sql,params):
+		
+		try:
+			row=[]			
+			cursor=con.cursor()
+			cursor.execute(sql,params)
+			row=cursor.fetchone()
+			cursor.close()
+		except Exception as e:
+			print(e)
+		finally:
+			return row
+
+
 	def InsertDataIdentity(self,sql,params):
 		nuevo_id=0
 		try:
@@ -35,6 +49,7 @@ class QueryDocumentos():
 				cursor.commit()
 				
 		except Exception as e:
+			print(sql)
 			print(e)			
 		finally:
 			return nuevo_id
@@ -57,7 +72,14 @@ class QueryDocumentos():
 
 	def updatetable(self,con,sql,params):
 		cursor=con.cursor()
-		cursor.execute(sql,params)
+		try:
+			cursor.execute(sql,params)
+		except Exception as e:
+			print("eror del insert",e)
+			raise
+		finally:
+			cursor.close()
+		
 		
 		
 

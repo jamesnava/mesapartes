@@ -12,10 +12,10 @@
 {%block content%}
 <div>
     <div class="titulomodulo">
-        <h4 class="titulo-centro tituloletra">
+        <h4 class="titulo-centro tituloletra" style="color: darkblue; border-bottom: 2px solid rgba(255, 0, 0, .4);font-family: Verdana, Helvetica, sans-serif;">
             Documentos Pendientes a recepcion
         </h4>
-        <input class="input-derecha" id="btndocpendientes" placeholder="Buscar..." type="text"/>
+        <input class="input-derecha" id="btndocpendientes" placeholder="Titulo del documento" style="color: purple;border: 2px solid skyblue;" type="text"/>
     </div>
     <div class="contenedorgeneralHH" data-simplebar="">
         <table class="table table-bordered">
@@ -71,6 +71,14 @@
                     <td style="text-align: center;">
                         <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'URGENTE' %}prioridad-URGENTE {% elif val.Nombre_Prioridad == 'NORMAL' %}prioridad-NORMAL {% elif val.Nombre_Prioridad == 'BAJO' %}prioridad-BAJO{% endif %}" title="{{val.Nombre_Prioridad}}">
                         </i>
+                        <br/>
+                        <p class="{% if val.Nombre_Prioridad == 'URGENTE' %}prioridad-URGENTE {% elif val.Nombre_Prioridad == 'NORMAL' %}prioridad-NORMAL {% elif val.Nombre_Prioridad == 'BAJO' %}prioridad-BAJO{% endif %}" style="font-size: 11px;">
+                            <em>
+                                <strong>
+                                    {{val.Nombre_Prioridad}}
+                                </strong>
+                            </em>
+                        </p>
                     </td>
                     <td>
                         <button class="btn btn-primary ver-pdf" data-url="{{val.url_archivo}}" type="button">
@@ -92,10 +100,10 @@
         </table>
     </div>
     <div class="titulomodulo">
-        <h4 class="titulo-centro tituloletra">
+        <h4 class="titulo-centro tituloletra" style="color: darkblue; border-bottom: 2px solid rgba(255, 0, 0, .4);margin-top: 10px;font-family: Verdana, Helvetica, sans-serif;">
             Documentos recepcionados
         </h4>
-        <input class="input-derecha" id="btndocrecepcionados" placeholder="Buscar..." type="text"/>
+        <input class="input-derecha" id="btndocrecepcionados" placeholder="Titulo del documento" style="color: purple;border: 2px solid skyblue;" type="text"/>
     </div>
     <div class="contenedorgeneralB" data-simplebar="">
         <table class="table table-bordered">
@@ -154,6 +162,14 @@
                     <td style="text-align:center;">
                         <i aria-hidden="true" class="fas fa-circle {% if val.Nombre_Prioridad == 'URGENTE' %}prioridad-URGENTE {% elif val.Nombre_Prioridad == 'NORMAL' %}prioridad-NORMAL {% elif val.Nombre_Prioridad == 'BAJO' %}prioridad-BAJO {% endif %}" title="{{val.Nombre_Prioridad}}">
                         </i>
+                        <br/>
+                        <p class="{% if val.Nombre_Prioridad == 'URGENTE' %}prioridad-URGENTE {% elif val.Nombre_Prioridad == 'NORMAL' %}prioridad-NORMAL {% elif val.Nombre_Prioridad == 'BAJO' %}prioridad-BAJO{% endif %}" style="font-size: 11px;">
+                            <em>
+                                <strong>
+                                    {{val.Nombre_Prioridad}}
+                                </strong>
+                            </em>
+                        </p>
                     </td>
                     <input id="idmov" name="" type="hidden" value="{{val.Id_Movimiento}}"/>
                     <td>

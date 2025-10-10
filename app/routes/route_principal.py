@@ -21,33 +21,44 @@ def cargar_usuario():
 @login_required
 def principal():
 	objConsulta=QueryDocumentos()
-	sql="""WITH UltimosMovimientos AS ( SELECT *,ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila
-    FROM MOVIMIENTO)
-	SELECT COUNT(M.Id_Movimiento) AS pendientes       
-	FROM UltimosMovimientos M
-	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento
-	INNER JOIN PERSONA AS P ON D.Emisor = P.Dni
-	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad = TP.Id_TiposPrioridad
-	INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento
-	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen = O.Id_Oficina
-	LEFT JOIN Adjunto AS A ON D.Id_Adjunto = A.Id_Adjunto
-	WHERE M.fila = 1 AND M.Tipo_Flujo = 'Egreso'  AND M.Id_Oficina_Destino = ?  AND D.Estado IN (1, 3);
+	sql="""WITH UltimosMovimientos AS (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento, Id_Oficina_Destino ORDER BY Fecha_Movimiento DESC ) AS fila  FROM MOVIMIENTO)
+	SELECT COUNT(M.Id_Movimiento) as pendientes       
+	FROM UltimosMovimientos M INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento INNER JOIN PERSONA AS P ON D.Emisor = P.Dni INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad = TP.Id_TiposPrioridad
+	INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento INNER JOIN Oficina AS O ON M.Id_Oficina_Origen = O.Id_Oficina
+	LEFT JOIN Adjunto AS A ON D.Id_Adjunto = A.Id_Adjunto WHERE M.fila = 1
+  	AND M.Tipo_Flujo = 'Egreso'
+  	AND M.Id_Oficina_Destino = ?          -- tu parámetro
+  	AND M.Id_Accion IN (1,3)              -- pendiente (registrado o derivado)
+  	AND NOT EXISTS (                      -- <--- filtra anulados
+    SELECT 1 
+    FROM MOVIMIENTO M2
+    WHERE M2.Id_Documento = M.Id_Documento  AND M2.Id_Accion = 12  AND M2.Fecha_Movimiento > M.Fecha_Movimiento)
 	"""
 	params=(current_user.id_oficina)	
 	rows=objConsulta.ConsultaMainDocParams(sql,params)
 
 	#documentos pendiente a atencion
-	sql_P_Atencion="""WITH UltimosMovimientos AS (
-  	SELECT *,
-         ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento DESC) AS fila
-  	FROM MOVIMIENTO)
-
-	SELECT COUNT(M.Id_Movimiento) AS pendientes
-	FROM UltimosMovimientos M
-	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento INNER JOIN PERSONA AS P ON D.Emisor=P.Dni
-	INNER JOIN Tipos_Prioridad AS TP ON D.Prioridad=TP.Id_TiposPrioridad INNER JOIN Tipo_Documento AS TD ON D.Id_TipoDocumento=TD.Id_TipoDocumento
-	INNER JOIN Oficina AS O ON M.Id_Oficina_Origen=O.Id_Oficina LEFT JOIN Adjunto AS A ON D.Id_Adjunto=A.Id_Adjunto
-	WHERE M.fila = 1 AND M.Tipo_Flujo =? AND M.Id_Oficina_Destino = ? AND D.Estado IN (?,?);"""
+	sql_P_Atencion="""WITH UltimosMovimientos AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY Id_Documento, Id_Oficina_Destino ORDER BY Fecha_Movimiento DESC
+           ) AS fila  FROM MOVIMIENTO WHERE Tipo_Flujo = ? OR Tipo_Flujo=?  -- solo movimientos de ingreso
+			)
+	SELECT 
+    COUNT(M.Id_Movimiento) as pendientes FROM UltimosMovimientos M
+	INNER JOIN DOCUMENTO D ON M.Id_Documento = D.Id_Documento
+	INNER JOIN PERSONA P ON D.Emisor = P.Dni
+	INNER JOIN Tipos_Prioridad TP ON D.Prioridad = TP.Id_TiposPrioridad
+	INNER JOIN Tipo_Documento TD ON D.Id_TipoDocumento = TD.Id_TipoDocumento
+	INNER JOIN Oficina O ON M.Id_Oficina_Origen = O.Id_Oficina
+	LEFT JOIN Adjunto A ON D.Id_Adjunto = A.Id_Adjunto
+	WHERE M.fila = 1  AND M.Id_Accion IN (?,?)             -- pendiente de atención (recepcionado o derivado)
+  	AND M.Id_Oficina_Destino =?         -- oficina actual
+  	AND NOT EXISTS ( SELECT 1  FROM MOVIMIENTO M2  WHERE M2.Id_Documento = M.Id_Documento  AND M2.Fecha_Movimiento > M.Fecha_Movimiento
+    AND ( M2.Id_Oficina_Origen = M.Id_Oficina_Destino -- ya salió de la oficina
+          OR (M2.Id_Accion = 7 AND M2.Id_Oficina_Origen = M.Id_Oficina_Destino) -- archivado en esta oficina
+      )                      
+      
+  )
+"""
 
 	#observados
 	sql_observado="""WITH ULTIMOSMOVIMIENTOS AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY Id_Documento ORDER BY Fecha_Movimiento 
@@ -60,17 +71,17 @@ def principal():
 					
 	rows_observados=objConsulta.ConsultaMainDocParams(sql_observado,(4,current_user.id_oficina))
 
-	paramspatencion=('Ingreso',current_user.id_oficina,2,5)
+	paramspatencion=('Ingreso','Interno',2,5,current_user.id_oficina)
 
 	rows_pendientesAtencion=objConsulta.ConsultaMainDocParams(sql_P_Atencion,paramspatencion)
-	print(paramspatencion)
+	
 
 	#consultado la leyenda
 	sql_leyenda="SELECT * FROM Tipos_Prioridad"
 	rows_prioridades=objConsulta.ConsultaMainDoc(sql_leyenda)
 
 
-	pendientesRecepcion=rows[0].pendientes if rows else 0
+	pendientesRecepcion=rows[0].pendientes if rows else 0	
 	pendientesAtencion=rows_pendientesAtencion[0].pendientes if rows_pendientesAtencion else 0
 	observadosdoc=rows_observados[0].observados if rows_observados else 0
 
